@@ -36,6 +36,12 @@ this file is where continuity lives, not an issue tracker.)
   (slot-fill) are built and tested; rungs 2–6 are designed. Full table in
   [`design.md`](design.md).
 
+- **License: LGPL-3.0-or-later.** A user can add arlo to any project, including
+  proprietary ones, while modifications to arlo itself stay open, the right fit for a
+  drop-in operator. GPLv3 is in `COPYING`, the LGPLv3 additional permissions in
+  `COPYING.LESSER`. Copyright is recorded as "the arlo authors"; change it if a specific
+  entity should hold it.
+
 ## Open (decide with evidence, do not guess)
 
 - **How hoist reacquires arlo: vendor-with-pin vs reference.** Recommendation on the
@@ -60,9 +66,6 @@ this file is where continuity lives, not an issue tracker.)
 - **Rungs 2–6.** reason-rank/disambiguate (2), explain/dry-run narrate (3), compose real
   cards (4), synthesize a card from source (5), free NL→shell generation for the genuine
   no-card tail (6, labeled unverified). Designed, not built. See [`design.md`](design.md).
-
-- **License.** None chosen yet. A public repo should carry one; the choice is the
-  owner's (MIT vs proprietary vs other). Left out deliberately rather than assumed.
 
 ## What is built and tested right now
 

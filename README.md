@@ -25,3 +25,9 @@ truth.
 - How to think while building arlo: [`CLAUDE.md`](CLAUDE.md)
 
 Run the tests: `for t in tests/test_*.py; do python3 "$t"; done`
+
+## License
+
+LGPL-3.0-or-later. The GNU GPL v3 is in [`COPYING`](COPYING) and the GNU LGPL v3
+additional permissions are in [`COPYING.LESSER`](COPYING.LESSER); together they are the
+Lesser GPL v3. Copyright (C) 2026 the arlo authors.
