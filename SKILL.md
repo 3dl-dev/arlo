@@ -223,7 +223,15 @@ won't get.** The parser structurally misses these; card them yourself from groun
     ground truth once and record it into *this* project's own arlo corpus / restore snapshot —
     self-contained at lights-out even if the dependency is absent, but a dated projection that
     can rot, so stamp it with its source and date (the `LIGHTS-OUT.md` discipline) and
-    re-harvest when the dependency is reachable again.
+    re-harvest when the dependency is reachable again. A capture is only sufficient if a cold
+    operator needs *nothing else* — so it must persist, not just the bare command+purpose:
+    (a) the `.<dir>/ → <binary>` mapping (the fragile hop, so cold use never re-derives it);
+    (b) each command's **arg template and flags** (or rung-1 slot-fill has no hole to bind);
+    (c) for a multi-party/multi-host op, the per-step **actor/where and human handoffs** — the
+    same attribution rung 4 presents at answer-time, *persisted* here, or the cold runbook reads
+    as a single-operator script; and (d) the **raw grounding source** (the `--help`/doc text) so
+    the cold operator can re-verify `card_grounded` offline without the tool present. Capturing
+    only command+purpose+source is the under-capture that leaves cold onboarding incomplete.
   Which to use is the operator's decision, resolved from their situation (is the dependency
   present at lights-out? is its surface stable enough to snapshot?) — the same
   regenerate-vs-dated-snapshot tradeoff arlo already makes for cards. Either way, do not stop
