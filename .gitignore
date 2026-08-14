@@ -5,3 +5,6 @@ venv/
 
 # rd (ready) build-tracking — local only, never ships with the standalone product
 .ready/
+
+# emitted distributable (regenerable from config.json via the hoistable builder); shipped as a release asset
+arlo.hoist.SKILL.md
