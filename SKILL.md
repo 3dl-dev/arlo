@@ -55,53 +55,124 @@ pointing at ground truth:
   a grounded rung's confidence. No model on the box means rung 6 is unavailable and
   arlo abstains rather than guess.
 
-## 1. Provision the local model (while the frontier is up)
+## 1. Resolve the local operator model (LOM), in situ — do not assume a fixed one
 
-    arlo/provision.sh [runtime_dir] [model_name]
+arlo names **no** model, and pointing this step at one specific model in one specific
+direction is an error out of the gate — the antithesis of arlo. The LOM is a resource
+gradient you resolve *here, in place*, from what this operator actually has and what this
+project actually needs. It may be:
 
-arlo cannot assume a model exists on the box, so setting one up is part of its job.
-It provisions a small CPU model on an independent path. Do it while things work, so
-arlo can answer when they do not.
+- the very model now running this skill (you), ranking the real cards directly with no
+  separate embedder at all — often the best fit, since you are already a capable model;
+- a large local model or self-hosted endpoint the operator wired up;
+- a small instruct/coder model, or a bare CPU sentence-embedder (`arlo/provision.sh
+  [runtime_dir] [model_name]` is *one* way to stand up that last option — not the mandated
+  one, not a default).
+
+Assess and pick the best fit; provision it now, while the frontier is up, if it needs
+provisioning. This is invariant #4 (resolve, don't hardcode) applied to the model tier
+itself — putting a thumb on the scale toward any named model or fixed runtime is exactly the
+mistake arlo exists to avoid. Whatever you resolve, the grounding core below keeps it honest.
 
 ## 2. Extract capability cards from ground truth
 
     python3 -m arlo.cards <spec.json> --root <checkout> --out cards.json
 
-A card pairs a command with its ground-truth purpose and its source. Cards are
-generated, never authored: a shell script's header comment is the purpose and its
-`Usage:` line is the command; a **verb-dispatched** script (`mainframe rail`, `mf
-status`, `git commit`) yields one card *per verb*, the verbs read from the script's
-real `case` dispatch so a verb it does not have is never carded; a universal infra
-command (`docker compose restart`, `kubectl rollout restart`) is harvested from its own
-`--help`. There is no path to hand-write a card, so it cannot drift from the tool it
-describes. The spec keys are `scripts`, `dispatchers`, `makefiles`, `helpcards`.
+A card pairs a command with its ground-truth purpose and its source. `arlo.cards` is a
+**deterministic first pass, not the finished corpus.** It parses the easy, regular cases: a
+shell script's header comment (purpose) and `Usage:` line (command); a **verb-dispatched**
+script (`mainframe rail`, `mf status`) into one card *per verb* from its real `case`
+dispatch; a universal infra command (`docker compose restart`, `kubectl rollout restart`)
+from its own `--help`. The spec keys are `scripts`, `dispatchers`, `makefiles`, `helpcards`.
+But a deterministic parser is necessarily partial and can mis-parse, and **you are the LOM —
+your job is to verify its draft against real source and complete the harvest by hand**,
+staying grounded the whole way: only ever card a command that appears *verbatim as a real
+invocation in real source*. `ground.card_grounded(command, source)` is your check for that.
 
-**Card the canonical surface, completely — a real command it drops is a real command
-the operator won't get.** Two rules that ground-source testing has shown matter:
+**Verify every drafted card against its source — this is where the invariant is kept when
+the parser slips.** A card whose command is not a real invocation in its cited source is a
+fabrication and must be dropped, no matter how confident it looks. The concrete failure this
+catches: a dispatcher whose program name the parser guessed from a *description word* (it
+read `sync   sync ~/.claude to workshop` and emitted `sync inference`, `sync off`, `sync
+logs` — but `sync` is coreutils, and `sync inference` is not a real operation; the real form
+is `mainframe inference`). Synthesized `prog verb` cards where `prog` never appears as the
+script's own `#!`/basename/`Usage:` invocation, verbs pulled from *nested* `case` blocks
+rather than the top-level dispatch, and colliding ids across two dispatchers are all parser
+artifacts — read the script's real top-level dispatch and header, keep the real verbs, drop
+the phantoms. Emitting a `prog verb` that does not exist is the gravest failure class (the
+`--parent`-lie, reproduced by the harvester); the invariant is absolute, so this verify pass
+is not optional.
 
-- **Makefiles: card *every* recipe-bearing target, not only the `##`-documented ones.**
-  An undocumented target is real ground truth whether or not someone wrote a `##` above
-  it; its purpose falls back to the target name or its first recipe line. (The
-  deterministic `arlo.cards` parser keys on `##`; when you run the harvest, complete it by
-  carding the undocumented targets straight from the `Makefile` — they are ground truth
-  too.) Skip only build-system-generated noise (`cmake_*`, `edit_cache`, `rebuild_cache`,
-  `depend`, …). When a target merely *wraps* a lower-level command, the target is the
-  operator's canonical surface: return `make <target>`, not the command it wraps — both
-  are real, but for a shop that drives ops through `make` the wrapped one is the *wrong
-  real* command.
-- **`--help` harvesting tolerates a nonzero exit.** Some tools (e.g. `go`) exit 2 on
-  `--help` yet still print their real subcommands; the subcommands are ground truth
-  regardless of exit code. Card them rather than forcing a higher rung to recover.
+**Then complete the surface — a real command the parser drops is a real command the operator
+won't get.** The parser structurally misses these; card them yourself from ground truth:
 
-## 3. Translate intent into a grounded command (when the lights are out)
+- **Makefiles: card *every* recipe-bearing target, not only the `##`-documented ones.** The
+  parser keys on `##`; an undocumented `all:`/`clean:`/`test:` target is ground truth too
+  (purpose falls back to the target name or its first recipe line). Projects routinely leave
+  the headline op (`make test`, `make up`) undocumented — harvest them straight from the
+  `Makefile`. Skip only build-system noise (`cmake_*`, `edit_cache`, `rebuild_cache`, …).
+  When a target *wraps* a lower-level command, the target is the operator's canonical
+  surface: return `make <target>`, not the wrapped command.
+- **Infra `--help` whose shape the parser can't read — recover the verbs by hand.** The
+  deterministic extractor only reads a cobra-style `Available Commands:`/`Commands:` section
+  with `≥2` spaces before the description. Real tools break every one of those assumptions,
+  and each break silently drops real verbs: a **nonzero exit** that still prints usage (`go`,
+  or a frozen-verb string like `gpu: want submit|status|logs|…`); a **different section
+  header** (`Basic Commands (Beginner):`, `The commands are:`, `Unit Commands:`);
+  **colon-aligned padding** that leaves the *longest* verb only one space (so `az group
+  create`, `az containerapp revision deactivate`, a cobra group's longest subcommand vanish
+  while their shorter siblings card fine); and a **catch-all placeholder** synopsis (`kubectl
+  [flags] [options]`, `go <command> [arguments]`) that is not a runnable command. Read the
+  real `--help`/usage yourself and card each actual verb (`prog verb`); never card the
+  placeholder.
+- **Script synopses the parser truncates or collapses.** Join **backslash-continued** `Usage:`
+  lines before reading them (else you card an env-var prefix with a dangling `\`, or refuse a
+  genuinely-present multi-line command at rung 5). Card **each variant** a header lists
+  (`./boot.sh`, `--clean`, `--rebuild`, `--slim` are four real commands, not one). Split a
+  synopsis that shows **two example forms** (`api.sh GET … | api.sh POST …`) into separate
+  cards. Recognize an **indented synopsis with no literal `Usage:` keyword** (`#   deploy.sh
+  <user> <name>`) so the argument template survives for rung-1 slot-fill. Strip a trailing
+  parenthetical **annotation** (`scripts/run-soak.sh [DURATION]   (default: 48h)`) off the
+  command — real doc text, but not part of the invocation.
+- **The parameterized recipes in the project's Markdown runbooks.** For many shops the real,
+  runnable ground truth — the full `az containerapp update -g … -n … --image …`, `cmake -B
+  build -D…`, a k3s recovery `kubectl delete secret … && systemctl restart k3s-agent` — lives
+  only in `docs/`, not in any script header or `--help`. `arlo.cards` has no channel for
+  Markdown, so read those code fences yourself and card the commands, each grounded to the
+  doc line with `card_grounded`. Prefer a **live** script/`--help` over prose when both exist:
+  a hand-written doc goes stale (a moved path, a renamed flag) — exactly the drift arlo
+  exists to catch — so the harvested script wins the tie.
+- **Scope `helpcards` to the tools this project actually drives ops through.** arlo cards
+  whatever `--help` you name; naming a tool the project never invokes (a `docker compose
+  --help` in a repo with no compose file) injects real-but-irrelevant cards that dominate
+  ranking. Grep the runbooks first; card only the surfaces the project's ops actually use.
+  For a **large multi-subgroup CLI** (`az`, `gcloud`, `kubectl`), do not helpcard its
+  top-level `--help` at all: it lists subgroups you can't run bare (`az group` is a group,
+  `az group create` is the command) and utility leaves you never touch (`az login`,
+  `az feedback`), while hiding the ops verbs under a `Subgroups:` header the parser skips.
+  Harvest the concrete `az <group> <verb>` invocations the runbooks actually use instead.
 
-    "$runtime/venv/bin/python" -m arlo.translate cards.json "reset a password"
+## 3. Translate intent into a grounded command
 
-The local model embeds the query and the cards and picks the closest, hybrid of
-semantic similarity (so "bounce" reaches "restart") and lexical overlap weighted
-toward the command signature. It returns the chosen card's command verbatim, its
-confidence, and the runners-up, and below a confidence floor it says it has no match
-rather than guess.
+Retrieval is **yours to do as the resolved LOM (§1), over the real cards, returning a card's
+command verbatim.** `python3 -m arlo.translate cards.json "reset a password"` will run a
+hybrid similarity+lexical ranker for you — but treat it as an *accelerant, not the answer
+path*: it requires a provisioned embedder (it `ModuleNotFoundError`s if none is installed —
+so it is not the command to reach for the moment you have no model), and its shipped
+model-free `bag_of_words` floor mis-ranks badly (it cannot index short tokens like `up`,
+collides 5-char prefixes like `production`/`products`, and lets generic ops words — `status`,
+`logs`, `job` — clear the floor with a wrong card). When you are the LOM (you always are at
+skill-run time), rank the real cards directly: weigh the intent against each card's purpose
+*and* whether its command signature actually performs the operation named, and emit the
+chosen command verbatim with the runners-up.
+
+**Abstain on judgment, not on a cosine number.** A high blind score from shared words is not
+a match. If the top card's command does not actually do what the intent asks — or if you know
+the surface it asks about was not fully harvested (§2) — say "no confident match" and, when a
+real source exists, climb to rung 5 (propose from that source) rather than hand back a *wrong
+real* command wearing unearned confidence. Surfacing a plausible-but-wrong real command as
+though it were the answer is the failure the harvest and abstention gaps combine to produce;
+it is safe only because you label it — do not skip the label.
 
 ## 4. Fill the blank in a real command (rung 1)
 
@@ -142,14 +213,29 @@ When one command is not enough, plan a short sequence out of *real* cards. Retur
 ordered list of card **ids**; `ground.compose(cards, ids)` emits each command verbatim in
 order and drops (and reports) any id that is not a real card. Present the steps discretely,
 not joined into one `a && b` line, so each stays verifiable. **Label it less-trusted —
-verify the order.**
+verify the order.** A real runbook sequence usually includes prose prelude and verify steps —
+auth/env setup (`op signin`, `direnv allow`), post-checks (`go vet`, a `verifylive` smoke) —
+that live in the docs, not in any script header, and a `compose` will only emit the scripted
+middle if those atoms were never harvested. When the composed sequence looks thin, the fix is
+upstream: harvest the prelude/verify steps from the runbook (§2) so the composition is the
+*real* sequence. If an atom the sequence needs cannot be grounded, drop it and say so rather
+than paper the gap with an invented step.
 
 ### Rung 5 — propose  *(summarizes real source — review required)*
 When no card fits, read real source (a `--help`, a runbook, a script) and draft a card.
 Call `ground.card_grounded(command, source)`: the proposed command's skeleton must appear
 verbatim in the source you read, or it is refused. A proposal is always a **review-required
 draft**, never auto-adopted into the corpus. Label it two ways: grounded-to-the-source, and
-not-yet-ground-truth-pending-review.
+not-yet-ground-truth-pending-review. Two source cautions ground-source testing surfaced:
+before the substring check, **join backslash-continued lines *and* collapse internal
+whitespace runs** — a fence commonly writes `nostr-relay-prod \` with a space *before* the
+backslash, so a bare join leaves a double space (`prod  --image`) that the exact-substring
+check still misses; without the whitespace-collapse a genuinely-present multi-line command (a
+wrapped `az containerapp update …` or `cmake -B build -D…`) is falsely refused. And prefer a **live**
+script/`--help` over a prose doc when both describe the command — a hand-written runbook can
+be stale (a moved `Dockerfile` path, a renamed flag), and `card_grounded` will happily bless
+the stale form because it only checks the source you handed it. Grounded-to-a-stale-doc is the
+`--parent` failure re-entering at rung 5; the live source breaks the tie.
 
 ### Rung 6 — generate  *(no grounding — UNVERIFIED)*
 Only when rungs 0-5 have all come up empty. Write a command from scratch — it is **not**
