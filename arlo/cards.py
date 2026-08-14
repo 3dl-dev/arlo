@@ -84,7 +84,10 @@ def _verb_purpose(header, verb):
 
 
 def extract_script_card(path):
-    """One card from a shell script's header block."""
+    """One card from a shell script's header block. Handles a `Usage:` whose synopsis is
+    on the following line(s) (`# Usage:` then `#   ./boot.sh ...`) as well as inline
+    (`# Usage: foo <bar>`). Never returns a card with an empty command — a script whose
+    header yields no usable invocation is not carded rather than carded as a blank."""
     with open(path, encoding="utf-8", errors="replace") as f:
         lines = f.read().splitlines()
     i = 1 if lines and lines[0].startswith("#!") else 0
@@ -95,19 +98,29 @@ def extract_script_card(path):
             header.append(l.lstrip("#").strip())
             i += 1
         elif l.strip() == "":
-            # a blank line ends the header block (headers are contiguous comments)
-            break
+            break  # a blank line ends the header block (headers are contiguous comments)
         else:
             break
     if not any(header):
         return None
-    usage = next((h for h in header if h.lower().startswith("usage:")), None)
-    purpose = " ".join(h for h in header if h and h is not usage).strip()
-    name = os.path.basename(path)
-    if usage:
-        command = usage.split(":", 1)[1].strip()
+    u_idx = next((i for i, h in enumerate(header) if h.lower().startswith("usage:")), None)
+    command = None
+    if u_idx is not None:
+        after = header[u_idx].split(":", 1)[1].strip()
+        if after:
+            command = after
+        else:  # synopsis is on the following indented line(s); take the first, sans comment
+            for h in header[u_idx + 1:]:
+                if h.strip():
+                    command = h.split("#", 1)[0].strip() or None
+                    break
+        purpose = " ".join(header[:u_idx]).strip()
     else:
-        command = _rel(path)
+        command = _rel(path)   # no Usage line: the script itself is the command
+        purpose = " ".join(header).strip()
+    name = os.path.basename(path)
+    if not command or not command.strip():
+        return None
     return {
         "id": os.path.splitext(name)[0],
         "purpose": purpose or name,
@@ -163,22 +176,58 @@ def _host_run(cmd, timeout):
         return 127, f"(could not run: {e})"
 
 
-def extract_help_card(cmd, timeout=30, run=None):
-    """One card harvested from a tool's own --help. The help text is ground truth
-    for a universal infra command (docker compose restart, kubectl rollout
-    restart) that no project script wraps.
+# a command synopsis that is only a placeholder for "some subcommand" — carding it as a
+# template would let arlo emit an ungrounded subcommand (rd frobnicate), so it is refused.
+_CATCHALL_RE = re.compile(
+    r"^\S+\s+[\[<]?(commands?|cmd|subcommands?|args?|options?|flags?)[\]>]?[.\s]*$",
+    re.IGNORECASE)
+# a "subcommands" section header in --help output (cobra/click/git/kubectl style)
+_CMDSEC_RE = re.compile(r"^(available commands|commands|subcommands):\s*$", re.IGNORECASE)
+_SUBCMD_RE = re.compile(r"^\s+([a-z][\w-]+)\s{2,}(\S.*)$")
 
-    run is the command runner, (cmd, timeout) -> (rc, text), default host. Pass an
-    environment runner (build_corpus.environment_runner) to harvest the --help of a
-    command as it exists INSIDE wherever the system runs, not on the host."""
+
+def extract_help_cards(cmd, timeout=30, run=None):
+    """Cards harvested from a tool's own --help (ground truth for an infra command no
+    project script wraps). Returns a LIST:
+
+      - if the help lists subcommands (an `Available Commands:` / `Commands:` section),
+        ONE card PER subcommand (`prog verb`), so each is real ground truth — the same
+        verb-awareness the bash-`case` harvester gives, for --help-listed CLIs;
+      - otherwise a single card from the synopsis, UNLESS the synopsis is a catch-all
+        placeholder (`prog [command]`), which is refused: carding it would let arlo emit
+        an ungrounded subcommand. Better no card than a template that invents commands.
+
+    run is the command runner, (cmd, timeout) -> (rc, text), default host."""
     run = run or _host_run
     rc, out = run(cmd, timeout)
-    # No card unless the command actually ran and produced its own help. A command
-    # that is absent (inside the environment or on the host) fails here and yields
-    # nothing, rather than a fabricated card pointing at a command that is not there.
-    if rc != 0:
-        return None
+    if rc != 0:            # the command is absent -> no fabricated card
+        return []
     lines = [l.rstrip() for l in out.splitlines()]
+    prog = cmd.split(" --help")[0].split(" -h")[0].strip()
+
+    # 1) a real subcommand section -> one card per verb
+    for i, l in enumerate(lines):
+        if _CMDSEC_RE.match(l.strip()):
+            subs = []
+            for sl in lines[i + 1:]:
+                if not sl.strip():
+                    if subs:
+                        break        # blank line ends the section
+                    continue
+                m = _SUBCMD_RE.match(sl)
+                if m and m.group(1).lower() not in ("help", "completion"):
+                    subs.append({
+                        "id": f"{prog.replace(' ', '-')}-{m.group(1)}",
+                        "purpose": m.group(2).strip(),
+                        "command": f"{prog} {m.group(1)}",
+                        "source": cmd,
+                    })
+                elif not sl.startswith((" ", "\t")):
+                    break            # a dedented line ends the section
+            if subs:
+                return subs
+
+    # 2) no section -> a single synopsis card, unless it is a catch-all placeholder
     desc = next((l.strip() for l in lines
                  if l.strip() and not l.strip().lower().startswith("usage:")), "")
     usage_idx = next((i for i, l in enumerate(lines)
@@ -188,19 +237,21 @@ def extract_help_card(cmd, timeout=30, run=None):
         after = lines[usage_idx].split(":", 1)[1].strip()
         if after:
             command = after
-        else:  # synopsis is on the following indented line(s)
+        else:
             for l in lines[usage_idx + 1:]:
                 if l.strip():
                     command = l.strip()
                     break
     if not command:
         command = cmd.replace(" --help", "")
-    return {
+    if _CATCHALL_RE.match(command):   # 'rd [command]' -> refuse, don't invent
+        return []
+    return [{
         "id": cmd.replace(" --help", "").replace(" ", "-"),
         "purpose": desc or cmd,
         "command": command,
         "source": cmd,
-    }
+    }]
 
 
 def extract_makefile_cards(path):
@@ -256,10 +307,9 @@ def build_cards(spec, root=".", run=None):
                 c["source"] = c["source"].replace(p, rel)
                 cards.append(c)
     for cmd in spec.get("helpcards", []):
-        c = extract_help_card(cmd, run=run)
-        if c:
-            cards.append(c)
-    return cards
+        cards.extend(extract_help_cards(cmd, run=run))
+    # defense in depth: never surface a card with no command (a fabricated blank).
+    return [c for c in cards if c.get("command") and c["command"].strip()]
 
 
 def main(argv=None):

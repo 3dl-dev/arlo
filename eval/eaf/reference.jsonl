@@ -1,0 +1,10 @@
+{"command": "make up", "source": "Makefile:up"}
+{"command": "make down", "source": "Makefile:down"}
+{"command": "make sync", "source": "Makefile:sync"}
+{"command": "make spend", "source": "Makefile:spend"}
+{"command": "make audit", "source": "Makefile:audit"}
+{"command": "make export", "source": "Makefile:export"}
+{"command": "make nuke", "source": "Makefile:nuke"}
+{"command": "make logs", "source": "Makefile:logs"}
+{"command": "make ps", "source": "Makefile:ps"}
+{"command": "make test", "source": "Makefile:test"}

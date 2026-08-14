@@ -1,0 +1,31 @@
+[
+  {
+    "name": "mainframe",
+    "root": "/home/baron/projects/mainframe",
+    "spec": {
+      "dispatchers": ["scripts/mainframe.sh", "scripts/mf", "scripts/llama-qwen36.sh"],
+      "scripts": ["scripts/mk-inference.sh", "scripts/mk-relay.sh", "scripts/mk-rd-node.sh",
+                  "scripts/mk-k3s-cp.sh", "scripts/mk-k3s-worker.sh", "scripts/mk-workshop.sh",
+                  "scripts/mk-rental.sh", "scripts/mk-trainer.sh"]
+    },
+    "reference": "eval/mainframe/intents.jsonl"
+  },
+  {
+    "name": "eaf",
+    "root": "/home/baron/projects/enterprise_ai_framework",
+    "spec": { "makefiles": ["Makefile"] },
+    "reference": "eval/eaf/reference.jsonl"
+  },
+  {
+    "name": "vms",
+    "root": "/home/baron/projects/vms",
+    "spec": { "makefiles": ["build/Makefile", "Makefile"], "scripts": ["boot.sh"] },
+    "reference": "eval/vms/reference.jsonl"
+  },
+  {
+    "name": "ready",
+    "root": "/home/baron/projects/ready",
+    "spec": { "helpcards": ["rd --help"] },
+    "reference": "eval/ready/reference.jsonl"
+  }
+]

@@ -108,6 +108,84 @@ class DispatchCards(unittest.TestCase):
         self.assertEqual(by_cmd["widget status"], "widget status")
 
 
+MULTILINE_USAGE = """#!/bin/bash
+# ONE command: clean-install and boot the thing
+#
+# Usage:
+#   ./boot.sh                 # build if needed, install + boot
+#   ./boot.sh --clean         # force a fresh disk
+#
+set -euo pipefail
+"""
+
+EMPTY_USAGE = """#!/bin/bash
+# a script whose Usage line has no synopsis at all
+# Usage:
+echo hi
+"""
+
+
+class ScriptCardEdges(unittest.TestCase):
+    """Regressions surfaced by the STEP-3 multi-project loss (vms): a `Usage:` whose
+    synopsis is on the next line must still yield a real command, and a header that
+    yields no usable invocation must NOT be carded as a blank (an invariant violation)."""
+
+    def _card(self, text):
+        with tempfile.NamedTemporaryFile("w", suffix=".sh", delete=False) as f:
+            f.write(text); path = f.name
+        try:
+            return cards.extract_script_card(path)
+        finally:
+            os.unlink(path)
+
+    def test_multiline_usage_takes_the_synopsis_line(self):
+        c = self._card(MULTILINE_USAGE)
+        self.assertEqual(c["command"], "./boot.sh")          # not empty
+        self.assertIn("clean-install", c["purpose"])
+
+    def test_empty_usage_is_not_carded_as_a_blank(self):
+        self.assertIsNone(self._card(EMPTY_USAGE))           # no fabricated empty card
+
+
+# A --help with a real subcommand section (cobra/git/kubectl style) and, separately, a
+# bare catch-all synopsis.
+HELP_WITH_SUBCOMMANDS = (
+    "mytool — does things\n\n"
+    "Usage: mytool [command]\n\n"
+    "Available Commands:\n"
+    "  build       compile the project\n"
+    "  deploy      ship it to prod\n"
+    "  help        Help about any command\n\n"
+    "Flags:\n  -h  help\n"
+)
+HELP_CATCHALL_ONLY = "mytool — does things\n\nUsage:\n  mytool [command]\n"
+
+
+class HelpCards(unittest.TestCase):
+    """Regressions surfaced by the STEP-3 loss (ready): a CLI that lists subcommands is
+    harvested one card PER subcommand; a CLI whose synopsis is only a catch-all
+    placeholder is refused (carding `mytool [command]` would let arlo emit an ungrounded
+    subcommand — an invariant risk)."""
+
+    def _run(self, text):
+        return lambda cmd, timeout=30: (0, text)
+
+    def test_subcommand_section_becomes_one_card_per_verb(self):
+        cs = cards.extract_help_cards("mytool --help", run=self._run(HELP_WITH_SUBCOMMANDS))
+        cmds = {c["command"] for c in cs}
+        self.assertEqual(cmds, {"mytool build", "mytool deploy"})   # help/completion dropped
+        self.assertEqual(next(c["purpose"] for c in cs if c["command"] == "mytool build"),
+                         "compile the project")
+
+    def test_catchall_synopsis_is_refused(self):
+        cs = cards.extract_help_cards("mytool --help", run=self._run(HELP_CATCHALL_ONLY))
+        self.assertEqual(cs, [])          # no card beats an ungroundable `mytool [command]`
+
+    def test_absent_command_yields_no_card(self):
+        cs = cards.extract_help_cards("nope --help", run=lambda c, timeout=30: (127, "not found"))
+        self.assertEqual(cs, [])
+
+
 if __name__ == "__main__":
     result = unittest.main(exit=False, verbosity=0).result
     if result.wasSuccessful():

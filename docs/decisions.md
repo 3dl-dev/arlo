@@ -198,6 +198,39 @@ regardless of everything below. (b) rung-1 exact match (skeleton + bound slot) �
 (d) abstention: on intents with no matching card, arlo says "no confident match" rather than
 binding a wrong card ≥ 90% of the time.
 
+### STEP 3 is an optimization loop, not a one-shot grade (reframe 2026-08-14)
+
+STEP 3 is a **test that produces a loss function, back-propagated through the two upstream
+artifacts — the hoist distribution (STEP 2) and the skill toolset (STEP 1) — to optimize
+them**, and it runs across **all the pointed-at projects** (`mainframe`, `ready`, `vms`,
+`enterprise_ai_framework`), not mainframe alone. The pass bar above is the per-project
+acceptance target; the *loss* is how far each project is from it.
+
+- **Test.** For each project: hoisted arlo harvests that project's real ground truth, answers
+  a held-out intent set, graded against the project's own commands. Read-only harvest, never
+  a mutating command against live infra.
+- **Loss, decomposed by failure type** (each a separate gradient): (i) **harvestability** —
+  a real command has no card at all; (ii) **retrieval** — the right card exists but is not
+  selected; (iii) **binding** — right card, wrong slot fill; (iv) **abstention** — guessed
+  when it should have declined, or declined when it should have answered; (v) **invariant**
+  — emitted a command that is not ground truth (a hard, absolute failure). Aggregated across
+  projects into one loss.
+- **Backprop = attribution.** Each loss component names the upstream cause to fix:
+  harvestability → `cards.py` / harvesting (skill toolset); retrieval/binding/reason-rank →
+  the rungs + LOM (skill toolset); abstention → the confidence floor (skill toolset);
+  invariant → a structural bug in `ground.py`/`binder.py` (skill toolset core); a project that
+  fails to deploy/accept on a clean target → `config.json` (the distribution). Fix upstream,
+  re-run, watch the loss fall. **The verb-aware-harvesting fix was the first gradient step:**
+  the mainframe test showed a harvestability loss (verb-dispatched commands uncardable), which
+  back-propagated into `cards.py` and drove `extract_dispatch_cards`.
+- **Model-free vs LOM-graded loss.** Harvestability, abstention, and invariant components are
+  **model-free** (computed now, across all projects, no rail); retrieval/binding/reason-rank
+  quality needs the LOM (the rail phase). The loop starts with the model-free gradients and
+  adds the LOM-graded ones when a model is on the rail.
+
+The Deliverable-1 items below are the *rail-phase* (LOM-graded) slice of this loop; the
+multi-project model-free slice runs first and is where the next gradients come from.
+
 **Deliverable 1 — arlo grades rung-1 binding against real ground truth on the rail.**
 1. *Model weights reachable from rail jobs.* A small instruct/coder LOM (e.g.
    Qwen2.5-Coder-7B/14B) and a stronger judge (e.g. Qwen3-32B) are cached to a rail-visible
