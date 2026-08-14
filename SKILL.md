@@ -151,6 +151,41 @@ won't get.** The parser structurally misses these; card them yourself from groun
   `az group create` is the command) and utility leaves you never touch (`az login`,
   `az feedback`), while hiding the ops verbs under a `Subgroups:` header the parser skips.
   Harvest the concrete `az <group> <verb>` invocations the runbooks actually use instead.
+- **The preconditions that make any of this runnable — auth, config, env.** Do not assume the
+  box you run on is the configured box where setup happened. A fresh clone or a cold machine
+  has the *system* but not the operator's *access* to it: `az` unauthed, `kubectl` with no
+  context, secrets unloaded, `.envrc` unallowed. The commands that restore that access —
+  `az login`, `az acr login -n …`, `kubectl config use-context …`, `op signin`, `direnv
+  allow`, `source .envrc`, `docker login …` — are operational ground truth too, and they live
+  in the project's README/setup docs and CI env blocks. Those names are *illustrations, not a
+  menu*: this project's restore surface may use none of them (a `source_env` in `.envrc`, an
+  insecure registry with no login, a 1Password flow) — harvest the ones this project actually
+  documents, and abstain on a precondition it does not, rather than parrot an example here.
+  Harvest them: in a lights-out moment,
+  restoring a precondition is often the *first* real need and the prelude (rung 4) to every
+  other op. The invariant still binds — arlo never invents a credential or a config value; it
+  surfaces the real, grounded restore command and leaves the secret to the operator.
+
+## 2b. Calibrate the setup to the project — climb only as far as its ops need
+
+Projects differ in operational complexity, and arlo's setup should match the project rather
+than impose a fixed shape. A project whose ops are single commands (vms: `boot`, build,
+`ctest`) bottoms out **shallow** — a small card corpus and rung 0–1 is the whole job. A
+project where nearly everything is N-step (mainframe, EAF: stand up the control plane and
+confirm health, recover a component, restore access then deploy) needs the **full climb**:
+deeper harvest (prose runbooks, precondition/prelude steps), a more capable resolved LOM
+(§1), and rung-2/4 reasoning and composition.
+
+Do not guess the depth — **measure it in situ, and self-calibrate.** Pose the project's own
+real needs to yourself, answer them from the harvested corpus + resolved LOM, and check each
+answer against ground truth (a real script/`--help`/runbook — the same grounding you card
+from). Where you fall short — a need with no card, a wrong-real pick, a multi-step op whose
+atoms are missing — climb: harvest deeper, resolve a stronger LOM, add composition, then
+re-pose the needs. Setup is done when the LOM reliably serves *this* project's real needs,
+grounded, not when a fixed checklist is ticked. This is the LOM tuning its own setup in
+situ, using the project's own ground truth as the check — **not** a shipped grader, a
+held-out benchmark, or a scored loop. Those are apparatus arlo does not build; the
+calibration is you, reasoning against real ground truth, climbing until the project is served.
 
 ## 3. Translate intent into a grounded command
 
