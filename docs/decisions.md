@@ -36,11 +36,14 @@ this file is where continuity lives, not an issue tracker.)
   (slot-fill) are built and tested; rungs 2–6 are designed. Full table in
   [`design.md`](design.md).
 
-- **License: LGPL-3.0-or-later.** A user can add arlo to any project, including
-  proprietary ones, while modifications to arlo itself stay open, the right fit for a
-  drop-in operator. GPLv3 is in `COPYING`, the LGPLv3 additional permissions in
-  `COPYING.LESSER`. Copyright is recorded as "the arlo authors"; change it if a specific
-  entity should hold it.
+- **License: LGPL-2.1-or-later.** The balance point. MIT/Apache are permissive but let
+  an owner rug-pull a later version closed; GPL stays open but *contaminates* every
+  consumer (they must go GPL too). LGPL keeps arlo's *own* changes open while letting any
+  consumer, proprietary included, link it freely. Chosen at **2.1, not 3.0**,
+  deliberately: LGPLv3 folds in GPLv3's anti-tivoization, patent, and anti-DRM
+  expansions, more restrictive than the plain LGPL bargain we want. Full text in
+  `COPYING` (LGPL-2.1 is a self-contained license, no GPL companion file needed).
+  Copyright is "the arlo authors"; change it if a specific entity should hold it.
 
 ## Open (decide with evidence, do not guess)
 
