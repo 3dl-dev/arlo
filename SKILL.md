@@ -173,24 +173,59 @@ won't get.** The parser structurally misses these; card them yourself from groun
   restoring a precondition is often the *first* real need and the prelude (rung 4) to every
   other op. The invariant still binds — arlo never invents a credential or a config value; it
   surfaces the real, grounded restore command and leaves the secret to the operator.
-- **Reach past the repo tree — the harvest boundary is the project's operational reality, not
-  its checkout.** A project's ground truth includes what it *declares it depends on*: when its
-  docs say "runs on <platform> — see <platform>/docs/…", or name the host/cluster/bastion it
-  lives on, that referenced source is this project's ground truth by the project's own
-  declaration, as real as a `Usage:` line and grounded the same way (`card_grounded` against
-  that doc). The operate/reach/restore commands a tenant repo never contains — because they
-  belong to its platform — live there. Resolve it by **either strategy, the operator's call,
-  both supported**; name neither as the default:
-  - **Recurse.** Follow the pointer and re-harvest from the platform at the moment of use —
-    always current, but the platform repo must be reachable then (a cold clone of *this* repo
-    alone may not carry it). This is the "regenerate, don't store" side.
-  - **Capture.** At setup, while the frontier is up and the platform is reachable, harvest the
-    pointer's ground truth once and record it into *this* project's own arlo corpus / restore
-    snapshot — self-contained at lights-out even if the platform repo is absent, but a dated
-    projection that can rot, so stamp it with its source and date (the `LIGHTS-OUT.md`
-    discipline) and re-harvest when the platform is reachable again.
-  Which to use is the operator's decision, resolved from their situation (is the platform
-  present at lights-out? is the access path stable enough to snapshot?) — the same
+- **Reach past the repo tree — discover the project's operational dependencies and recurse
+  into each one's ground truth.** A project is operated through more than its own files: the
+  platform it lives on and the tools it habitually runs are part of its operational reality,
+  and their command surface is ground truth even though it lives elsewhere. **Find these from
+  the project's own evidence — do not wait to be handed them** (being told "this project uses
+  `rd`" is a thumb on the scale; the skill's job is to make you *notice* it):
+  - **Declared dependency.** The project's docs name where it runs or what it needs: "runs on
+    <platform> — see <platform>/docs/…", a host/cluster/bastion, a sibling repo. Follow the
+    reference; it is this project's ground truth by the project's own declaration.
+  - **Ambient dependency, discovered from footprint.** A tool the project drives ops through
+    but *never declares*, because it is shared infra. Read the footprint: the dotdirs it
+    carries, the config and state files it accumulates, and the commands its scripts habitually
+    invoke. **The ones that matter are the ones you do NOT already recognize — an unfamiliar
+    `.<something>/` dir or config is a dependency signal, not noise; do not skip it because you
+    can't place it, and do not lean on a name you happen to already know (that is the frontier
+    model's crutch — at a real site the shared tool is one you have never seen).** Resolve an
+    unknown artifact to its tool *from evidence, not recall*:
+    - **Read the artifact itself.** Its contents usually say what it *is*, even when they never
+      name the command: a schema, a service kind, endpoints, a `project`/`board`/`id` field
+      (e.g. a `.<x>/config.json` carrying nostr event kinds and a "board" coordinate is a
+      nostr-native board tool; a state file's keys name its model). That fixes *what* you're
+      dealing with.
+    - **Resolve the binary separately** — the dir name and the CLI often differ (a `.ready/`
+      board is driven by `rd`, not `ready`), so do not assume `.<name>/` ⇒ `<name>`. Probe PATH
+      (`which <name>`, `<name> --help`), and if that misses, find *what writes these files*:
+      grep the project's scripts/CI for the artifact path (a fixture or soak script that names
+      the real command), or the tool's own repo if it is present on the box. This last mile is
+      the fragile hop: the state files reliably say *what* the tool is, but often nothing
+      in-tree spells the CLI. When you can name what it is but not the runnable binary, you have
+      found a real dependency you cannot yet ground — that `.<x>/ → <binary>` mapping is a prime
+      thing to **capture** at setup while it is known (record it into the project's arlo config,
+      per the recurse/capture choice below), so cold use never has to re-derive it. Until it is
+      captured or a writer names it, abstain — do not guess the binary.
+    - **Then harvest its surface** (`<tool> --help`, one card per verb per §2), which lives in
+      the tool or the tool's own repo/skill, **not** in this project.
+    If you cannot resolve a footprint artifact to a grounded command surface, say so and abstain
+    on its ops — never guess a verb for a tool you only half-identified. A whole class of "only
+    the frontier model knew how" ops (grant a teammate onto a shared board, reseal it) is
+    exactly this: real verbs of a shared tool that no consuming repo documents.
+  Whichever way a dependency surfaces, its referenced source is as real as a `Usage:` line and
+  grounded the same way (`card_grounded` against the tool's help/doc). Resolve it by **either
+  strategy, the operator's call, both supported**; name neither as the default:
+  - **Recurse.** Re-harvest from the dependency (the platform, or the tool's own repo/`--help`)
+    at the moment of use — always current, but the dependency must be reachable then (a cold
+    clone of *this* repo alone may not carry the sibling repo; a tool may be absent from PATH).
+    This is the "regenerate, don't store" side.
+  - **Capture.** At setup, while the frontier is up and the dependency is reachable, harvest its
+    ground truth once and record it into *this* project's own arlo corpus / restore snapshot —
+    self-contained at lights-out even if the dependency is absent, but a dated projection that
+    can rot, so stamp it with its source and date (the `LIGHTS-OUT.md` discipline) and
+    re-harvest when the dependency is reachable again.
+  Which to use is the operator's decision, resolved from their situation (is the dependency
+  present at lights-out? is its surface stable enough to snapshot?) — the same
   regenerate-vs-dated-snapshot tradeoff arlo already makes for cards. Either way, do not stop
   at the directory boundary; setup is when this linkage is cheap to capture and impossible to
   reconstruct cold, so capture or wire it then.
@@ -277,7 +312,13 @@ When one command is not enough, plan a short sequence out of *real* cards. Retur
 ordered list of card **ids**; `ground.compose(cards, ids)` emits each command verbatim in
 order and drops (and reports) any id that is not a real card. Present the steps discretely,
 not joined into one `a && b` line, so each stays verifiable. **Label it less-trusted —
-verify the order.** A real runbook sequence usually includes prose prelude and verify steps —
+verify the order.** When the sequence spans multiple actors or machines (an owner mints an
+invite, the joiner redeems it on *their own* box, the owner then grants), the who/where for
+each step is ground truth in the verb's own `--help` prose — a card carries only the bare
+verb, so harvest the actor/where and present it per step (`[owner] rd invite …` / `[joiner]
+rd join …` / `[owner] rd grant …`). The bare ordered verbs alone do not say that a human
+handoff and a second machine sit between them; emitting them without that attribution reads
+as a single-operator script and misleads. A real runbook sequence usually includes prose prelude and verify steps —
 auth/env setup (`op signin`, `direnv allow`), post-checks (`go vet`, a `verifylive` smoke) —
 that live in the docs, not in any script header, and a `compose` will only emit the scripted
 middle if those atoms were never harvested. When the composed sequence looks thin, the fix is
