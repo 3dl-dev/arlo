@@ -14,12 +14,17 @@ For each target project:
    Read the project's real ground truth (its scripts, `case` dispatchers, `--help`, `make`
    targets) and write ~10–15 rows of operator-phrased intents paired with the **real** command
    they map to — plus a few intents the project has *no* command for (abstention). Row shape:
-   `{"id": "...", "intent": "operator words", "expected_command": "the real command",
-   "expected_key": "the grounded substring that must appear", "card_expected": true|false}`.
-   Every `expected_command` must trace to real ground truth — you are writing the answer key,
-   so verify it against the source. Abstention rows use `"expected_command": null,
-   "card_expected": false`. Keep this file local (it is gitignored: project-specific, never
-   ships with arlo).
+   Two row shapes, and **you must include both** — single commands *and* multi-step
+   procedures, because real ops is mostly multi-step and rung 4 (compose) is the point:
+   - single: `{"id","intent","expected_command","expected_key","card_expected":true}`
+   - multi-step: `{"id","intent","multi":true,"card_expected":true,
+     "expected_steps":[{"command":"real cmd","key":"grounded substring"}, ...]}` — an
+     ordered runbook (e.g. "stand up a fresh soak from scratch" → build fixture → build
+     binary → run it). Give ~2-3 multi-step rows per project, drawn from real procedures.
+   - abstention: `{"id","intent","expected_command":null,"card_expected":false}`.
+   Every `expected_command` / step `command` must trace to real ground truth — you are
+   writing the answer key, so verify it against the source. Keep this file local (it is
+   gitignored: project-specific, never ships with arlo).
 
 2. **Dispatch an agent to run the skill in the project's context.** Spawn a *fresh* agent
    (its model is the LOM) and have it FOLLOW `SKILL.md` in the target project — READ-ONLY:
@@ -42,6 +47,8 @@ For each target project:
 ## What a good result looks like
 
 The grounding core keeps every emitted command a real one (invariant holds); a capable LOM
-closes the retrieval gap. On mainframe this scored retrieval 28/28, abstention 6/6. A low
-score is a real gradient into the skill; a hermetic core test going green is not the same
-thing and never will be.
+retrieves the right single command AND sequences the right multi-step runbook (rung 4) —
+every step still a real card. On mainframe single-command scored 28/28, abstention 6/6;
+multi-step is graded the same way, order-aware. A low score is a real gradient into the
+SKILL (how the agent harvests/reasons/composes), never "fix the code." A hermetic core test
+going green is not the same thing and never will be.
