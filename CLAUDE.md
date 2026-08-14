@@ -1,5 +1,22 @@
 # CLAUDE.md, arlo (project standing orders)
 
+> # ⛔ WE DISTRIBUTE A SKILL. NOT CODE.
+>
+> arlo is a **skill** — `SKILL.md`, natural-language instructions an agent follows. That
+> is the entire product. Making it **grounded, correct, and accurate** is the work you
+> own; you iterate on **the skill**. We **never** ship code to *accomplish the task*, and
+> we never build an apparatus to *grade, harness, or orchestrate* it. Code exists **only**
+> for the deterministic operations that are invariant in the solution space — arithmetic,
+> and the structural guarantees that keep a command real by construction (`fill`, `select`,
+> `ground`). That is a short, closed list.
+>
+> **If you are about to write Python to do the task, to grade, to harness, to run a loop —
+> STOP.** The answer is almost always: *improve `SKILL.md`*. The loss, the eval, the
+> optimization all happen at the skill level — you read what a real in-situ session reveals
+> and you sharpen the skill. When you catch yourself building an apparatus, you have already
+> failed. Iterate the skill. (Written after imposing four rigid code-shapes in one session,
+> each caught by a human. Do not need a fifth.)
+
 arlo is **A Real, Local Operator**: the no-frontier operational fallback. When the
 frontier model is down and credits are out, the operator types their own words and
 arlo hands back the exact command to run, grounded in the system's own ground truth.

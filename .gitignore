@@ -9,8 +9,6 @@ venv/
 # emitted distributable (regenerable from config.json via the hoistable builder); shipped as a release asset
 arlo.hoist.SKILL.md
 
-# STEP-3 grader inputs: per-target held-out sets, authored per run — never ship with arlo
-grade/held_out/
 
 # rendered hero image (build artifact, regenerable from docs/arlo-hero.html)
 docs/arlo-hero.png

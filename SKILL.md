@@ -80,13 +80,15 @@ describes. The spec keys are `scripts`, `dispatchers`, `makefiles`, `helpcards`.
 the operator won't get.** Two rules that ground-source testing has shown matter:
 
 - **Makefiles: card *every* recipe-bearing target, not only the `##`-documented ones.**
-  `make down` is real ground truth whether or not someone wrote a `##` above it; its
-  purpose falls back to the target name or its first recipe line. (The deterministic
-  `arlo.cards` parser keys on `##`; when you run the harvest, complete it by carding the
-  undocumented targets straight from the `Makefile` — they are ground truth too.) Skip
-  only build-system-generated noise (`cmake_*`, `edit_cache`, `depend`, …). A project
-  whose operators live in `make` must get `make down`, not the `docker compose down` it
-  happens to wrap — both are real, but the wrapped command is the *wrong real* one.
+  An undocumented target is real ground truth whether or not someone wrote a `##` above
+  it; its purpose falls back to the target name or its first recipe line. (The
+  deterministic `arlo.cards` parser keys on `##`; when you run the harvest, complete it by
+  carding the undocumented targets straight from the `Makefile` — they are ground truth
+  too.) Skip only build-system-generated noise (`cmake_*`, `edit_cache`, `rebuild_cache`,
+  `depend`, …). When a target merely *wraps* a lower-level command, the target is the
+  operator's canonical surface: return `make <target>`, not the command it wraps — both
+  are real, but for a shop that drives ops through `make` the wrapped one is the *wrong
+  real* command.
 - **`--help` harvesting tolerates a nonzero exit.** Some tools (e.g. `go`) exit 2 on
   `--help` yet still print their real subcommands; the subcommands are ground truth
   regardless of exit code. Card them rather than forcing a higher rung to recover.
