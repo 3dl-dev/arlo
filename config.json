@@ -1,0 +1,32 @@
+{
+  "_authored_by": "arlo (STEP 2: the Layer 2 recipe hoistable's builder emits into arlo.hoist.SKILL.md; arlo is source of truth, hoist imports the emitted artifact and upgrades at its own pace)",
+  "app": "arlo",
+  "source": {
+    "clone": "https://github.com/3dl-dev/arlo.git",
+    "dir": "arlo"
+  },
+  "binds": [
+    { "name": "git", "probe": "git --version", "required": true },
+    { "name": "python3", "probe": "python3 --version", "required": true }
+  ],
+  "default_profile": "default",
+  "profiles": {
+    "default": {
+      "isolation": {
+        "none": true,
+        "why": "hermetic: runs arlo's own grounding tests in a throwaway clone; stdlib-only, starts no daemons, binds no host ports, writes no shared state. The LOM is deliberately NOT part of the distribution: the model that runs the skill is resolved in the operator's own context along the resource gradient (see decisions.md), so the artifact neither carries nor provisions a model. What transfers is the skill plus the model-agnostic grounding core."
+      },
+      "bringup": [
+        { "name": "no-build", "run": "true" }
+      ],
+      "health": [
+        { "name": "skill-and-core-present", "check": "test -f SKILL.md && test -f arlo/ground.py" }
+      ],
+      "acceptance": [
+        { "name": "test_grounding", "check": "python3 tests/test_grounding.py" },
+        { "name": "test_host_translate", "check": "python3 tests/test_host_translate.py" },
+        { "name": "test_ground", "check": "python3 tests/test_ground.py" }
+      ]
+    }
+  }
+}
