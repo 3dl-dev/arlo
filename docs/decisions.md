@@ -199,6 +199,25 @@ this file is where continuity lives, not an issue tracker.)
   model-free floor mis-picks on hard intents (labeled, low-confidence) — which is the
   whole reason the tier is an operator decision, not a shipped default.
 
+- **Anti-rot: cards are a regenerated projection of live ground truth, never stored truth.**
+  Card rot is not a side problem — it is the exact failure arlo exists to prevent (the
+  `--parent`→`--parent-id` drift *was* card rot). So the answer is not "manage the
+  paperwork," it is "keep no paperwork": harvesting is cheap and deterministic, so
+  **re-harvest from live ground truth at the moment of use** (the code is local even when
+  the frontier is down). The only durable artifact is the tiny *spec* (which sources to
+  harvest), not the commands. Any `.arlo/cards.json` cache is an optimization stamped with
+  the git SHA / mtime it was taken at — invalid the moment the code moves, so re-harvest;
+  `LIGHTS-OUT.md` is a dated last-resort snapshot. arlo is fast-regenerating, not durable.
+
+- **Multi-step ops are resolved by the agent in-situ, not by procedure-harvesting code.**
+  Real ops is multi-step (find creds → locate the pod → exec → run the guarded command),
+  but projects rarely document that well, and it is *not* arlo's code to build. The
+  operator tells the agent the intent; the **agent** resolves the sequence in the project's
+  context, composing real steps (rung 4) and reasoning (rung 2) — each step kept grounded by
+  arlo's primitives, abstaining when it cannot ground one. arlo stays narrow (grounding, the
+  invariant); the agent does the resolution. Building a procedure-harvester "for all cases"
+  is the build-it-here mode failure (see CLAUDE.md, the altitude invariant).
+
 ## Build plan (decomposition of the two Open items)
 
 Decomposed with swarm-plan discipline (outcome-scoped, ground-source done-conditions,
