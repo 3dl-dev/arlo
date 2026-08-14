@@ -229,9 +229,19 @@ won't get.** The parser structurally misses these; card them yourself from groun
     (b) each command's **arg template and flags** (or rung-1 slot-fill has no hole to bind);
     (c) for a multi-party/multi-host op, the per-step **actor/where and human handoffs** — the
     same attribution rung 4 presents at answer-time, *persisted* here, or the cold runbook reads
-    as a single-operator script; and (d) the **raw grounding source** (the `--help`/doc text) so
-    the cold operator can re-verify `card_grounded` offline without the tool present. Capturing
-    only command+purpose+source is the under-capture that leaves cold onboarding incomplete.
+    as a single-operator script; (d) the **raw grounding source** (the `--help`/doc text) so
+    the cold operator can re-verify `card_grounded` offline without the tool present; and
+    (e) an honest **coverage/confidence self-assessment** — which of this project's real needs
+    (§2b) arlo covers versus abstains on, the trust rung each covered answer earned, the known
+    gaps (surfaces not harvested, a dependency identified but whose binary would not resolve, a
+    hidden/undocumented op), and the staleness date. This is arlo telling the operator *how far
+    to trust it on this project, before the lights are out* — and it is the honest form of an
+    assessment: a per-project self-report the setup LOM writes and **regenerates** each setup
+    (anti-rot: the skill ships the instruction to produce it, never a frozen score), NOT a
+    shipped grader, loss, or benchmark number (that apparatus arlo does not build). Capturing
+    only command+purpose+source is the under-capture that leaves cold onboarding incomplete —
+    and capturing no self-assessment leaves the operator unable to tell a covered need from a
+    gap until they hit it at 3am.
   Which to use is the operator's decision, resolved from their situation (is the dependency
   present at lights-out? is its surface stable enough to snapshot?) — the same
   regenerate-vs-dated-snapshot tradeoff arlo already makes for cards. Either way, do not stop
