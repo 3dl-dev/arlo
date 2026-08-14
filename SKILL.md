@@ -161,10 +161,39 @@ won't get.** The parser structurally misses these; card them yourself from groun
   menu*: this project's restore surface may use none of them (a `source_env` in `.envrc`, an
   insecure registry with no login, a 1Password flow) — harvest the ones this project actually
   documents, and abstain on a precondition it does not, rather than parrot an example here.
-  Harvest them: in a lights-out moment,
+  Access to a *running* system is often not in the project's own files at all: a project that
+  runs on a platform it doesn't itself contain (a tenant of another system, deployed on a
+  cluster a sibling repo stood up) keeps its reach-the-system path in *that platform's* docs —
+  and the project's own docs point there (a `deploy/README` that says "runs on <host>'s k3s
+  cluster — see <host>/docs/…"). Follow that pointer (next bullet) and harvest the real access
+  path from it: reach the control-plane node over the host's own ssh surface, then `sudo k3s
+  kubectl …`, or whatever the platform documents. Abstaining because the command is not in
+  *this* repo, when the project itself points at the repo that has it, is a harvest that
+  stopped one hop too early. Harvest them: in a lights-out moment,
   restoring a precondition is often the *first* real need and the prelude (rung 4) to every
   other op. The invariant still binds — arlo never invents a credential or a config value; it
   surfaces the real, grounded restore command and leaves the secret to the operator.
+- **Reach past the repo tree — the harvest boundary is the project's operational reality, not
+  its checkout.** A project's ground truth includes what it *declares it depends on*: when its
+  docs say "runs on <platform> — see <platform>/docs/…", or name the host/cluster/bastion it
+  lives on, that referenced source is this project's ground truth by the project's own
+  declaration, as real as a `Usage:` line and grounded the same way (`card_grounded` against
+  that doc). The operate/reach/restore commands a tenant repo never contains — because they
+  belong to its platform — live there. Resolve it by **either strategy, the operator's call,
+  both supported**; name neither as the default:
+  - **Recurse.** Follow the pointer and re-harvest from the platform at the moment of use —
+    always current, but the platform repo must be reachable then (a cold clone of *this* repo
+    alone may not carry it). This is the "regenerate, don't store" side.
+  - **Capture.** At setup, while the frontier is up and the platform is reachable, harvest the
+    pointer's ground truth once and record it into *this* project's own arlo corpus / restore
+    snapshot — self-contained at lights-out even if the platform repo is absent, but a dated
+    projection that can rot, so stamp it with its source and date (the `LIGHTS-OUT.md`
+    discipline) and re-harvest when the platform is reachable again.
+  Which to use is the operator's decision, resolved from their situation (is the platform
+  present at lights-out? is the access path stable enough to snapshot?) — the same
+  regenerate-vs-dated-snapshot tradeoff arlo already makes for cards. Either way, do not stop
+  at the directory boundary; setup is when this linkage is cheap to capture and impossible to
+  reconstruct cold, so capture or wire it then.
 
 ## 2b. Calibrate the setup to the project — climb only as far as its ops need
 
