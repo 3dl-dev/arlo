@@ -71,11 +71,25 @@ A card pairs a command with its ground-truth purpose and its source. Cards are
 generated, never authored: a shell script's header comment is the purpose and its
 `Usage:` line is the command; a **verb-dispatched** script (`mainframe rail`, `mf
 status`, `git commit`) yields one card *per verb*, the verbs read from the script's
-real `case` dispatch so a verb it does not have is never carded; a Makefile target's
-`##` comment is the purpose and `make <target>` is the command; a universal infra
+real `case` dispatch so a verb it does not have is never carded; a universal infra
 command (`docker compose restart`, `kubectl rollout restart`) is harvested from its own
 `--help`. There is no path to hand-write a card, so it cannot drift from the tool it
 describes. The spec keys are `scripts`, `dispatchers`, `makefiles`, `helpcards`.
+
+**Card the canonical surface, completely — a real command it drops is a real command
+the operator won't get.** Two rules that ground-source testing has shown matter:
+
+- **Makefiles: card *every* recipe-bearing target, not only the `##`-documented ones.**
+  `make down` is real ground truth whether or not someone wrote a `##` above it; its
+  purpose falls back to the target name or its first recipe line. (The deterministic
+  `arlo.cards` parser keys on `##`; when you run the harvest, complete it by carding the
+  undocumented targets straight from the `Makefile` — they are ground truth too.) Skip
+  only build-system-generated noise (`cmake_*`, `edit_cache`, `depend`, …). A project
+  whose operators live in `make` must get `make down`, not the `docker compose down` it
+  happens to wrap — both are real, but the wrapped command is the *wrong real* one.
+- **`--help` harvesting tolerates a nonzero exit.** Some tools (e.g. `go`) exit 2 on
+  `--help` yet still print their real subcommands; the subcommands are ground truth
+  regardless of exit code. Card them rather than forcing a higher rung to recover.
 
 ## 3. Translate intent into a grounded command (when the lights are out)
 

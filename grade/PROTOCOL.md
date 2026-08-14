@@ -26,8 +26,14 @@ For each target project:
    writing the answer key, so verify it against the source. Keep this file local (it is
    gitignored: project-specific, never ships with arlo).
 
-2. **Dispatch an agent to run the skill in the project's context.** Spawn a *fresh* agent
-   (its model is the LOM) and have it FOLLOW `SKILL.md` in the target project — READ-ONLY:
+2. **Dispatch an agent that LARPs as the project's OWN agent.** This is the altitude of the
+   whole test: arlo is deployed as a skill inside a *project's* agent, so the run must be as
+   close to that project's rig as possible — not a generic agent reading files from outside.
+   Spawn a *fresh* agent (its model is the LOM), have it **work from the target project's
+   directory** so it loads that project's `CLAUDE.md` and context, and instruct it to operate
+   *as that project's operator* — adopting the project's canonical surface and conventions
+   (does this shop drive ops through `make`? a bespoke CLI? `kubectl`?) — with arlo installed
+   as its skill. Then it FOLLOWS `SKILL.md` — READ-ONLY:
    discover the ground-truth surface, harvest cards, and for each intent return the single
    real command arlo should hand back (slots filled from the intent's own words), or
    `"NO_MATCH"` if it cannot ground one. It must never invent a command, and never run a
