@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# arlo launcher — put on PATH by `/arlo:start`. Resolves arlo's home (this file lives in
+# <arlo_home>/bin/), so `arlo <your words>` works from any project directory. The .arlo/
+# ground truth is found by walking up from your cwd; the model (if any) comes from config.
+set -euo pipefail
+ARLO_HOME="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+exec env PYTHONPATH="$ARLO_HOME${PYTHONPATH:+:$PYTHONPATH}" python3 -m arlo.cli "$@"

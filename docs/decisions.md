@@ -178,6 +178,27 @@ this file is where continuity lives, not an issue tracker.)
   early pass hand-built a mainframe intent set + Python grader inside `arlo/` — wrong layer
   and wrong sequence; relocated to the testbed layer as step-3 acceptance data.)
 
+- **The interface: `arlo <your words>` at a shell, set up once by the agent.** Two
+  surfaces, one product, and this resolves the paradox that arlo installs into an agent
+  but is needed when that agent (the frontier) is gone:
+  - **Setup — the agent, while the frontier is up (`/arlo:start`).** Harvest this
+    project's ground truth into `.arlo/cards.json`, resolve the model tier the operator
+    chose (the LOM gradient: a big local model, a small one, a self-hosted RunPod
+    endpoint, or none — decided and provisioned **once, here**) into `.arlo/config.json`,
+    write the lights-out runbook, and drop an `arlo` command on the PATH wired to all of
+    it. A big setup happens here; a trivial one (small/local/none) just works after.
+  - **Use — the shell, when the lights are out (`arlo <your words>`).** In the project
+    folder where you'd normally run `claude`, you run `arlo restart the deriver` and it
+    prints the real command. No agent, no frontier. `arlo` (see `arlo/cli.py`, launcher
+    `bin/arlo`) walks up to find `.arlo/`, uses the configured model if reachable, and
+    falls back to a model-free lexical match over the same real cards if not — a weaker
+    answer, labeled `[no model]`, beats no answer. Below a confidence floor it says "no
+    confident match" and points at `.arlo/LIGHTS-OUT.md`.
+  This is the honest answer to "nobody runs the python": they run `arlo`, a clean CLI
+  that hides the core. The quality of the answer tracks the resolved model tier; the
+  model-free floor mis-picks on hard intents (labeled, low-confidence) — which is the
+  whole reason the tier is an operator decision, not a shipped default.
+
 ## Build plan (decomposition of the two Open items)
 
 Decomposed with swarm-plan discipline (outcome-scoped, ground-source done-conditions,
