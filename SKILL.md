@@ -69,10 +69,13 @@ arlo can answer when they do not.
 
 A card pairs a command with its ground-truth purpose and its source. Cards are
 generated, never authored: a shell script's header comment is the purpose and its
-`Usage:` line is the command; a Makefile target's `##` comment is the purpose and
-`make <target>` is the command; a universal infra command (`docker compose restart`,
-`kubectl rollout restart`) is harvested from its own `--help`. There is no path to
-hand-write a card, so it cannot drift from the tool it describes.
+`Usage:` line is the command; a **verb-dispatched** script (`mainframe rail`, `mf
+status`, `git commit`) yields one card *per verb*, the verbs read from the script's
+real `case` dispatch so a verb it does not have is never carded; a Makefile target's
+`##` comment is the purpose and `make <target>` is the command; a universal infra
+command (`docker compose restart`, `kubectl rollout restart`) is harvested from its own
+`--help`. There is no path to hand-write a card, so it cannot drift from the tool it
+describes. The spec keys are `scripts`, `dispatchers`, `makefiles`, `helpcards`.
 
 ## 3. Translate intent into a grounded command (when the lights are out)
 

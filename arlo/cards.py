@@ -10,6 +10,9 @@ back the command verbatim. arlo never writes a command; it only points at one.
 Cards are generated from ground truth, never authored (the arlo invariant):
   - shell scripts: the leading comment block is the purpose, a `Usage:` line is
     the command.
+  - verb-dispatched scripts (`mainframe rail`, `mf status`): one card PER verb, the
+    verbs read from the script's real bash `case` dispatch, the invocation name from
+    its header. A verb the script does not dispatch is never carded.
   - Makefile targets: a `##` comment block above a target is the purpose,
     `make <target>` is the command.
 
@@ -19,11 +22,65 @@ Standard library only. Extraction is deterministic parsing of the real files.
 import argparse
 import json
 import os
+import re
 import sys
 
 
 def _rel(path):
     return path
+
+
+# A dispatch verb branch in a bash `case`: `rail)` or `opencode|oc)`, indented, the
+# pattern before `)`. Excludes the default `*)` and help branches.
+_CASE_RE = re.compile(r"^\s*([a-z][\w-]*(?:\|[a-z][\w-]*)*)\)")
+_SKIP_VERBS = {"-h", "--help", "help", "*"}
+
+
+def _dispatch_verbs(lines):
+    """The verb tokens of a bash `case` dispatch, in source order, deduped. For an
+    alternated branch (`opencode|oc)`) the first alternative is the canonical verb."""
+    verbs, seen = [], set()
+    in_case = False
+    for l in lines:
+        s = l.strip()
+        if s.startswith("case ") and " in" in s:
+            in_case = True
+            continue
+        if s == "esac":
+            in_case = False
+            continue
+        m = _CASE_RE.match(l)
+        if m:
+            verb = m.group(1).split("|")[0]
+            if verb not in _SKIP_VERBS and verb not in seen:
+                seen.add(verb)
+                verbs.append(verb)
+    return verbs
+
+
+def _dispatch_prog(header, verbs):
+    """The real invocation name of a dispatcher, from its own header: a `<prog> <verb>`
+    line (e.g. `mainframe status`) where <verb> is a real case verb names <prog>. Falls
+    back to None so the caller can use the file's basename."""
+    vset = set(verbs)
+    counts = {}
+    for h in header:
+        toks = h.replace("usage:", "").replace("Usage:", "").split()
+        if len(toks) >= 2 and toks[1] in vset and re.fullmatch(r"[\w.-]+", toks[0]):
+            counts[toks[0]] = counts.get(toks[0], 0) + 1
+    return max(counts, key=counts.get) if counts else None
+
+
+def _verb_purpose(header, verb):
+    """A verb's purpose from the header's mode list: a line like
+    `rail       — both GPUs → k3s-worker` or `rail: do the thing`. Ground truth from
+    the tool's own doc; empty if the header does not describe the verb."""
+    pat = re.compile(r"^" + re.escape(verb) + r"\b\s*[—:–-]*\s*(.+)$")
+    for h in header:
+        m = pat.match(h.strip())
+        if m and m.group(1).strip():
+            return m.group(1).strip()
+    return ""
 
 
 def extract_script_card(path):
@@ -57,6 +114,44 @@ def extract_script_card(path):
         "command": command,
         "source": _rel(path),
     }
+
+
+def extract_dispatch_cards(path):
+    """One card PER VERB of a verb-dispatched script (`mainframe rail`, `mf status`).
+    The verbs come from the script's real bash `case` dispatch — the source of truth for
+    what verbs exist — so a verb that is not a real branch is never carded. The
+    invocation name comes from the script's own header (`mainframe status` -> prog
+    `mainframe`), falling back to the basename; each verb's purpose comes from the
+    header's mode list when it documents the verb. The command is `prog verb`, both
+    halves ground truth. Returns [] if the file has no dispatch."""
+    with open(path, encoding="utf-8", errors="replace") as f:
+        lines = f.read().splitlines()
+    # leading comment region (the header): all comment lines before the first line of
+    # code; blank lines inside it are skipped, not treated as the end.
+    header, i = [], (1 if lines and lines[0].startswith("#!") else 0)
+    while i < len(lines):
+        l = lines[i]
+        if l.startswith("#"):
+            header.append(l.lstrip("#").strip())
+        elif l.strip() == "":
+            pass
+        else:
+            break
+        i += 1
+    verbs = _dispatch_verbs(lines)
+    if not verbs:
+        return []
+    base = os.path.splitext(os.path.basename(path))[0]
+    prog = _dispatch_prog(header, verbs) or os.path.basename(path)
+    cards = []
+    for v in verbs:
+        cards.append({
+            "id": f"{base}-{v}",
+            "purpose": _verb_purpose(header, v) or f"{prog} {v}",
+            "command": f"{prog} {v}",
+            "source": f"{_rel(path)}:{v})",
+        })
+    return cards
 
 
 def _host_run(cmd, timeout):
@@ -152,6 +247,12 @@ def build_cards(spec, root=".", run=None):
         p = os.path.join(root, rel)
         if os.path.isfile(p):
             for c in extract_makefile_cards(p):
+                c["source"] = c["source"].replace(p, rel)
+                cards.append(c)
+    for rel in spec.get("dispatchers", []):
+        p = os.path.join(root, rel)
+        if os.path.isfile(p):
+            for c in extract_dispatch_cards(p):
                 c["source"] = c["source"].replace(p, rel)
                 cards.append(c)
     for cmd in spec.get("helpcards", []):
