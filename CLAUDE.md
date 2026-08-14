@@ -22,6 +22,35 @@ This is the line that separates arlo from a fine-tuned NL→shell generator (whi
 invents commands, some destructive). arlo is not that. If a change would let arlo emit
 a command shape that is not ground truth, it violates the invariant, stop.
 
+## The altitude invariant — CHECK THIS BEFORE YOU BUILD OR GRADE ANYTHING
+
+arlo is a **meta-tool**: you build and grade *the skill executed in a project's context
+by an agent*, never the instance you would hand-build, never the shipped code called
+directly. This mistake has recurred over and over, each time caught only by a human
+redirect. It is the single most likely error in this repo. Run these three checks every
+time, out loud, before writing code, a card set, or an eval:
+
+1. **Building something?** Am I authoring arlo-the-skill — generic over any project
+   (`SKILL.md` + the neutral core) — or am I hand-doing the thing the skill is supposed
+   to do inside one project? If the latter, STOP: that output is testbed/acceptance data
+   at best, and it is *never* arlo itself. (Failure seen: hand-built a mainframe operator,
+   a mainframe eval set, a mainframe grader, all as if they were arlo.)
+
+2. **Grading something (STEP 3 / the loss)?** Does my eval **run the skill** — an agent
+   follows `SKILL.md` in a real project it has not seen, with its own model as the LOM,
+   and I grade what it produces — or does it call `arlo.<fn>()` on specs I authored here
+   with the model-free stub? If it calls arlo's functions directly, it grades the code we
+   ship, NOT the product; spawn the agent. (`eval/loss.py` is the hermetic *core-mechanics*
+   grade only; the STEP-3 loss is agent-driven. Failure seen: "optimized" the model-free
+   floor and called it the loss — the real loss with a LOM in the loop was 0.00.)
+
+3. **Reaching into another tool** (hoistable, the rail, anything)? Use its **skill**, do
+   not reconstruct its internals. If I am reading its `release/*.py` to hand-cut its
+   process, I am off the altitude. (Failure seen: spelunking hoistable's release code
+   instead of invoking the builder skill.)
+
+If any check fails, the work is at the wrong altitude — fix the altitude before the code.
+
 ## How to think while building here
 
 1. **The trust gradient, not "lookup only".** The local model (the LOM) does the
