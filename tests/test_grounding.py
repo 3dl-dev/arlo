@@ -13,7 +13,7 @@ import unittest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from arlo import build_corpus, cards  # noqa: E402
+from arlo import build_corpus, cards, runbook  # noqa: E402
 
 # A fixture verb-dispatched script: a header (with a Usage line naming the invocation
 # and a mode list documenting two verbs) and a real bash `case` dispatch.
@@ -184,6 +184,32 @@ class HelpCards(unittest.TestCase):
     def test_absent_command_yields_no_card(self):
         cs = cards.extract_help_cards("nope --help", run=lambda c, timeout=30: (127, "not found"))
         self.assertEqual(cs, [])
+
+
+class Runbook(unittest.TestCase):
+    """The lights-out artifact: every real command lands in it, grouped by source file,
+    with an offline way to query it — the durable thing the operator uses with no agent."""
+
+    CARDS = [
+        {"command": "mainframe rail", "purpose": "GPUs to the k3s worker", "source": "scripts/mainframe.sh:rail)"},
+        {"command": "mainframe off", "purpose": "release the GPUs", "source": "scripts/mainframe.sh:off)"},
+        {"command": "mk-relay.sh <VMID> <NAME> <IP>", "purpose": "make a relay VM", "source": "scripts/mk-relay.sh"},
+    ]
+
+    def test_every_command_is_in_the_runbook(self):
+        md = runbook.render(self.CARDS, project="mainframe")
+        for c in self.CARDS:
+            self.assertIn(c["command"], md)
+
+    def test_grouped_by_source_file_not_per_verb(self):
+        md = runbook.render(self.CARDS)
+        self.assertEqual(md.count("### scripts/mainframe.sh"), 1)  # both verbs, one heading
+        self.assertNotIn("mainframe.sh:rail)", md)                 # the :verb) suffix is stripped
+
+    def test_carries_an_offline_query_path(self):
+        md = runbook.render(self.CARDS)
+        self.assertIn("python3 -m arlo.translate", md)   # find a command with no frontier
+        self.assertIn("no confident match", md)          # it declines rather than guess
 
 
 if __name__ == "__main__":
