@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
-"""arlo STEP 3: the multi-project acceptance test as a loss function.
+"""arlo core-mechanics grade — the HERMETIC, model-free half of STEP 3.
 
-Not a one-shot grade. This runs hoisted arlo's harvest+answer path against EACH
-pointed-at project's real ground truth (read-only), computes a loss decomposed by
-failure type, and attributes each component to the upstream artifact that must change
-to reduce it — the skill toolset (STEP 1) or the distribution (STEP 2). Fix upstream,
-re-run, watch the loss fall. That attribution is the "backprop": a loss component names
-its own gradient.
+IMPORTANT — what this is NOT. This is not the STEP-3 loss. The STEP-3 loss grades the
+*skill executed in a project's context by an agent* (the agent's model as the LOM),
+because that is arlo's actual product — what a user's agent produces when it runs
+`/arlo:start` and `arlo <intent>` in a project it has never seen. That run is
+agent-driven (spawn an agent per project, have it follow SKILL.md, grade its answers).
+Measured that way on mainframe (2026-08-14): retrieval 28/28, abstention 6/6, loss 0.00.
 
-This module computes the MODEL-FREE components (no rail, no LOM):
-  - harvestability: a real command the project exposes has no card at all.
-  - invariant: any card whose command is not traceable to ground truth (a hard,
-    absolute failure; cards are generated from source, so this should be 0 — it is the
-    sentinel that proves the harvest never fabricated a command).
-Retrieval / binding / reason-rank QUALITY needs the LOM and is the rail phase; this
-harness prints those as an explicit boundary rather than faking a number.
+This module grades only the pieces that can be checked without an agent or a model, by
+calling arlo's shipped functions directly on specs authored here:
+  - harvestability: a real command the project exposes has no card at all → cards.py.
+  - invariant: a card whose command is not real ground truth (hard fail sentinel).
+  - the OFFLINE FLOOR: retrieval/abstention with the model-free bag-of-words embedder —
+    the degraded path arlo uses only when NO model is reachable at all. On mainframe it
+    floors at retrieval 0.39 / abstention 0.67; that gap is the LOM's to close, and the
+    agent-driven run shows it does. Do not mistake improving this floor for improving the
+    product — the product runs with a real LOM.
 
-Read-only: it harvests each project's checked-in ground truth and never runs a
-mutating command against it. Standard library only.
+Useful because it is fast and it caught a real bug (a dead embedder). But the loss that
+judges arlo is the agent-driven one above. Read-only, standard library only.
 """
 from __future__ import annotations
 

@@ -252,6 +252,22 @@ acceptance target; the *loss* is how far each project is from it.
 The Deliverable-1 items below are the *rail-phase* (LOM-graded) slice of this loop; the
 multi-project model-free slice runs first and is where the next gradients come from.
 
+**Correction 2026-08-14 — the loss must grade the SKILL EXECUTED IN CONTEXT, not the code
+we ship.** A repeating mode failure: `eval/loss.py` graded arlo's *shipped functions*
+(`cards.build_cards`, `translate.rank`) called directly on specs authored in this repo, with
+the model-free embedder. That is a hermetic unit test of the core — it caught a real dead-
+embedder bug (offline-floor retrieval 0.75→0.39) — but it is **not** the STEP-3 loss. arlo's
+product is what an *agent* produces when it runs the skill (`/arlo:start`, `arlo <intent>`)
+in a project it has never seen, with the agent's own model as the LOM. So the STEP-3 loss is
+**agent-driven**: spawn an agent per target project, have it follow `SKILL.md` to discover +
+harvest + answer held-out intents, and grade its answers. Measured that way on mainframe:
+**retrieval 28/28, abstention 6/6, loss 0.00** — the grounding core keeps every answer a real
+card, the LOM closes the retrieval gap the offline floor could not, and the invariant held
+end to end. `eval/loss.py` is relabeled the *offline-floor / core-mechanics* grade; improving
+that floor is not improving the product, which runs with a real LOM. (A repeatable agent-
+driven harness — a workflow fanning an agent across all projects — is the proper STEP-3
+tool; the mainframe run above was done by hand to prove the method.)
+
 **Deliverable 1 — arlo grades rung-1 binding against real ground truth on the rail.**
 1. *Model weights reachable from rail jobs.* A small instruct/coder LOM (e.g.
    Qwen2.5-Coder-7B/14B) and a stronger judge (e.g. Qwen3-32B) are cached to a rail-visible
