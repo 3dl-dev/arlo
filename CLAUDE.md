@@ -92,8 +92,15 @@ If any check fails, the work is at the wrong altitude — fix the altitude befor
 
 ## Working here
 
-- Run the tests: `python3 tests/test_grounding.py && python3 tests/test_host_translate.py && python3 tests/test_ground.py`
-  (all hermetic, no model download).
-- The product surface is `SKILL.md`. Nobody runs the Python at a shell as the product;
-  an agent invokes the skill. Running the `.py` is how you *grade the core*, legitimate,
-  but it is not the product.
+- The product is `SKILL.md`, executed by an agent. The `arlo/` package is a subordinate
+  neutral core it calls (see `arlo/README.md` for what earns code there). Nobody runs the
+  Python at a shell as the product.
+- **Core-mechanics checks** (hermetic, no model, they grade the *core* — not the product):
+  `for t in tests/test_*.py; do python3 "$t" || break; done`. A green suite means the
+  structural guarantees hold; it says nothing about whether arlo works.
+- **To grade arlo, run the skill** — the real loss is an agent executing `SKILL.md` in a
+  project it has not seen, its model the LOM, graded by `grade/PROTOCOL.md`. That is the
+  objective. When you want to know if a change helped, dispatch that, don't run a `.py`
+  here and watch a number. (There is deliberately no `eval/loss.py`; it graded shipped
+  code and was the altitude trap — deleted.) End here, on the product grade, because this
+  is the instruction that should be acted on.

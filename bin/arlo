@@ -4,4 +4,12 @@
 # ground truth is found by walking up from your cwd; the model (if any) comes from config.
 set -euo pipefail
 ARLO_HOME="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+# Altitude guard: running arlo INSIDE its own source repo exercises no product surface
+# (arlo has no target ground truth of its own) — it only feels like it does. Say so.
+case "$(pwd -P)/" in
+  "${ARLO_HOME}/"*)
+    echo "note: you are inside the arlo source repo. Running arlo here grades nothing —" >&2
+    echo "      arlo runs in a TARGET project's .arlo/. To grade arlo, see grade/PROTOCOL.md." >&2
+    ;;
+esac
 exec env PYTHONPATH="$ARLO_HOME${PYTHONPATH:+:$PYTHONPATH}" python3 -m arlo.cli "$@"

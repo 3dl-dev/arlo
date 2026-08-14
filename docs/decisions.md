@@ -175,8 +175,12 @@ this file is where continuity lives, not an issue tracker.)
   a mainframe-specific card set, eval set, or grader is an **output of step 3 applied to
   mainframe**, never part of arlo itself. If a piece of work names a specific target, it
   belongs to the testbed layer, not the shipped skill. (Course-correction, 2026-08-14: an
-  early pass hand-built a mainframe intent set + Python grader inside `arlo/` — wrong layer
-  and wrong sequence; relocated to the testbed layer as step-3 acceptance data.)
+  early pass hand-built a mainframe intent set + Python grader and checked them in under
+  `eval/` — wrong layer, wrong sequence, and a "relocated to the testbed layer" note that was
+  itself false: they were only renamed, not fenced. **Now actually fenced (2026-08-14):** the
+  entire `eval/` tree was deleted; the STEP-3 grader is `grade/PROTOCOL.md` (agent-driven, no
+  arlo import) and per-target held-out sets live in `grade/held_out/`, which is **gitignored**
+  — a fresh clone of arlo contains zero project-specific files, enforced by construction.)
 
 - **The interface: `arlo <your words>` at a shell, set up once by the agent.** Two
   surfaces, one product, and this resolves the paradox that arlo installs into an agent
@@ -282,10 +286,15 @@ in a project it has never seen, with the agent's own model as the LOM. So the ST
 harvest + answer held-out intents, and grade its answers. Measured that way on mainframe:
 **retrieval 28/28, abstention 6/6, loss 0.00** — the grounding core keeps every answer a real
 card, the LOM closes the retrieval gap the offline floor could not, and the invariant held
-end to end. `eval/loss.py` is relabeled the *offline-floor / core-mechanics* grade; improving
-that floor is not improving the product, which runs with a real LOM. (A repeatable agent-
-driven harness — a workflow fanning an agent across all projects — is the proper STEP-3
-tool; the mainframe run above was done by hand to prove the method.)
+end to end. **`eval/loss.py` was deleted (2026-08-14)** — it was the strongest confound in
+the repo: the only runnable "loss," and it graded shipped code (a green delta you could
+watch fall), while the real objective had no runner at all. In its place: the hermetic core
+mechanics live in `tests/` (they grade the *guarantees*, not the product), and the STEP-3
+loss is now a runnable, repeatable harness at **`grade/`** — `grade/PROTOCOL.md` (spawn an
+agent per project to run `SKILL.md`, collect its answers) + `grade/grade.py` (which
+deliberately does **not** import arlo — it only compares agent output to a held-out set) +
+`grade/held_out/` (per-target sets, gitignored). Improving a model-free floor is not
+improving the product; the product runs with a real LOM and is graded by running the skill.
 
 **Deliverable 1 — arlo grades rung-1 binding against real ground truth on the rail.**
 1. *Model weights reachable from rail jobs.* A small instruct/coder LOM (e.g.

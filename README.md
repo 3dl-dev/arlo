@@ -2,29 +2,43 @@
 
 **A Real, Local Operator. Lights-out ops.**
 
-When the frontier model is down and credits are out, you type your own words and arlo
-hands back the exact command to run, grounded in your system's own ground truth. It
-runs on an independent local path and **never invents a command** that isn't real.
+When your coding agent is down or rate-limited and the app breaks at 3am, you type your
+own words and arlo hands back the exact command to run — grounded in your system's own
+ground truth. It runs on an independent local path and **never invents a command** that
+isn't real.
 
-arlo is agent-first: the interface is a skill an agent invokes, not a command line.
-See [`SKILL.md`](SKILL.md) for how it is used. The Python here is the neutral core the
-skill calls.
+## arlo is a skill
 
-- `arlo/cards.py` — generate capability cards from ground truth (scripts, Makefiles, `--help`).
-- `arlo/translate.py` — rung 0: select a card by intent, return its command verbatim.
-- `arlo/binder.py` — rung 1: fill a real command template's slot from intent, skeleton never drifts.
-- `arlo/build_corpus.py` — lower-level grounded retrieval over raw harvested lines.
-- `provision.sh` — set up the frontier-independent local model (run while things work).
+The product is a skill your agent invokes — [`SKILL.md`](SKILL.md) — not a command line.
+You install it, set it up once while the frontier is up, then just talk to your agent:
 
-Depends on nothing but the standard library and a small local model (behind a lazy
-import). Add it to any project by pointing a card spec at that project's real ground
-truth.
+```
+/plugin marketplace add 3dl-dev/arlo
+/plugin install arlo@arlo
+/arlo:start          # arlo learns this project's real commands
+```
 
-- Design, trust gradient, and lineage: [`docs/design.md`](docs/design.md)
+Then ask ("how do I restart the deriver?") and arlo answers with a real command, or says
+"no confident match" rather than invent one. Lights-out, at a shell: `arlo <your words>`.
+Full install: [`docs/INSTALL.md`](docs/INSTALL.md).
+
+## Under the skill
+
+The `arlo/` package is a **small neutral core the skill calls** — a subordinate library,
+not the product. It exists to hold arlo's one invariant *by construction* (a command it
+returns is always real ground truth); see [`arlo/README.md`](arlo/README.md) for the rule
+on what earns code here versus what stays skill prose. Standard library only.
+
+- Design, trust gradient, lineage: [`docs/design.md`](docs/design.md)
 - Decisions made and still open: [`docs/decisions.md`](docs/decisions.md)
-- How to think while building arlo: [`CLAUDE.md`](CLAUDE.md)
+- How to think while building arlo (read the **altitude invariant** first): [`CLAUDE.md`](CLAUDE.md)
 
-Run the tests: `for t in tests/test_*.py; do python3 "$t"; done`
+## Grading arlo
+
+arlo is graded by **running the skill**, not by running its code. The real loss is an agent
+executing `SKILL.md` in a project it hasn't seen — see [`grade/PROTOCOL.md`](grade/PROTOCOL.md).
+The hermetic checks in `tests/` grade only the core's mechanics (the structural guarantees);
+a green test suite is not a graded product.
 
 ## License
 

@@ -1,8 +1,0 @@
-{"command": "rd create", "source": "rd --help:create"}
-{"command": "rd claim", "source": "rd --help:claim"}
-{"command": "rd done", "source": "rd --help:done"}
-{"command": "rd dep", "source": "rd --help:dep"}
-{"command": "rd board", "source": "rd --help:board"}
-{"command": "rd ready", "source": "rd --help:ready"}
-{"command": "rd gate", "source": "rd --help:gate"}
-{"command": "rd close", "source": "rd --help:close"}

@@ -1,5 +1,0 @@
-{"command": "make gcc", "source": "README.md"}
-{"command": "make libc", "source": "README.md"}
-{"command": "make all", "source": "build/Makefile:all"}
-{"command": "make clean", "source": "build/Makefile:clean"}
-{"command": "make install", "source": "build/Makefile:install"}
