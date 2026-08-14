@@ -247,7 +247,12 @@ Frontier at start: items 1, 2, 3 (independent). Critical path: 1/2/3 → 4 → 5
 
 ## What is built and tested right now
 
-- Card generation from ground truth (`arlo/cards.py`, `arlo/build_corpus.py`).
+- Card generation from ground truth (`arlo/cards.py`, `arlo/build_corpus.py`), including
+  **verb-aware harvesting** (`extract_dispatch_cards`, spec key `dispatchers`): a
+  verb-dispatched script (`mainframe rail`, `mf status`, `git commit`) yields one card per
+  verb, verbs read from the real bash `case` dispatch, a verb it does not have never carded.
+  Surfaced by STEP-3 grading on mainframe — took eval-set coverage from ~8 to full. Generic
+  over any dispatcher.
 - Rung 0 retrieval (`arlo/translate.py`): select a card, return its command verbatim,
   say "no confident match" below a floor rather than guess.
 - Rung 1 slot-fill (`arlo/binder.py`): bind a real template's hole from intent; the
@@ -265,7 +270,7 @@ Frontier at start: items 1, 2, 3 (independent). Critical path: 1/2/3 → 4 → 5
   (rung 6) stamps the permanent UNVERIFIED label — `grounded=False`, no path to a grounded
   rung's confidence; per Q2 no danger/denylist. The *reasoning* of each rung lives in
   SKILL.md (§ "Rungs 2-6"), carried out by whatever model runs the skill.
-- 24 hermetic tests across three files (`tests/test_{grounding,host_translate,ground}.py`),
+- 28 hermetic tests across three files (`tests/test_{grounding,host_translate,ground}.py`),
   graded on real host ground truth (a script `Usage:` line and `ls --help`) and structural
   invariant checks, no model download. Full command in `CLAUDE.md`. **STEP 1 (the skill
   toolset) is complete through rung 6.**
