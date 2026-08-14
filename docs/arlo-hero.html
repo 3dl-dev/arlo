@@ -1,0 +1,145 @@
+<title>arlo lights-out</title>
+<style>
+  :root{
+    --void:#0d0a07; --void-2:#120d08;
+    --panel:#151009; --panel-edge:#2c2012; --panel-top:#1d150c;
+    --amber:#ffb454; --amber-bright:#ffcf8a; --amber-dim:#a9772f;
+    --cream:#f3e9d8; --muted:#7a6647;
+    --grounded:#86b562; --decline:#c8703f;
+    --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --grotesque: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--void);min-height:100%}
+  body{display:grid;place-items:center;padding:24px;font-family:var(--mono)}
+
+  .stage{width:100%;max-width:1200px}
+  .poster{
+    container-type:inline-size;
+    position:relative; width:100%; aspect-ratio:1200/630; overflow:hidden;
+    border-radius:14px;
+    background:
+      radial-gradient(120% 140% at 82% 42%, rgba(255,180,84,.16), rgba(255,150,60,.05) 32%, transparent 58%),
+      linear-gradient(150deg,var(--void) 0%,var(--void-2) 62%,#0a0705 100%);
+    border:1px solid #241a0e;
+    box-shadow:0 30px 90px rgba(0,0,0,.55);
+    isolation:isolate;
+  }
+  /* faint scanlines across the whole scene, like a room lit by one screen */
+  .poster::after{
+    content:""; position:absolute; inset:0; z-index:5; pointer-events:none;
+    background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.16) 2px 3px);
+    mix-blend-mode:overlay; opacity:.5;
+  }
+
+  .grid{position:absolute; inset:0; display:grid; grid-template-columns:41% 59%; z-index:2}
+
+  /* ---- left: identity ---- */
+  .left{padding:7.5cqw 0 6cqw 6.5cqw; display:flex; flex-direction:column; height:100%}
+  .eyebrow{
+    font-size:1.15cqw; letter-spacing:.42em; text-transform:uppercase;
+    color:var(--amber-dim); font-weight:600;
+  }
+  .wordmark{
+    font-family:var(--grotesque); font-weight:800; letter-spacing:-.03em;
+    font-size:12.5cqw; line-height:.9; color:var(--amber);
+    margin-top:2.4cqw;
+    text-shadow:0 0 26px rgba(255,180,84,.45), 0 0 3px rgba(255,207,138,.6);
+  }
+  .expand{
+    font-size:1.7cqw; letter-spacing:.02em; color:var(--cream); margin-top:1.7cqw;
+    font-weight:500;
+  }
+  .kicker{
+    margin-top:auto; max-width:30cqw;
+    font-size:2.15cqw; line-height:1.32; color:#d8c7ab; font-weight:500;
+    font-family:var(--grotesque); letter-spacing:-.01em;
+  }
+  .kicker b{color:var(--amber-bright); font-weight:700}
+  .foot{
+    display:flex; align-items:center; gap:1.4cqw; margin-top:2.6cqw;
+    font-size:1.25cqw; color:var(--muted);
+  }
+  .foot .repo{color:var(--amber-dim)}
+  .foot .dot{width:.5cqw;height:.5cqw;border-radius:50%;background:var(--muted)}
+
+  /* ---- right: the terminal, the one light on ---- */
+  .right{display:grid; place-items:center; padding:5.5cqw 6cqw 5.5cqw 1cqw}
+  .term{
+    width:100%; border-radius:10px; overflow:hidden;
+    background:linear-gradient(180deg,var(--panel) 0%,#110c07 100%);
+    border:1px solid var(--panel-edge);
+    box-shadow:0 0 0 1px rgba(255,180,84,.06), 0 22px 60px rgba(0,0,0,.6),
+               0 0 60px rgba(255,170,70,.10);
+  }
+  .bar{
+    display:flex; align-items:center; gap:.9cqw;
+    padding:1.15cqw 1.5cqw; background:var(--panel-top);
+    border-bottom:1px solid var(--panel-edge);
+  }
+  .led{width:.85cqw;height:.85cqw;border-radius:50%;background:#3a2b18}
+  .led.on{background:var(--amber);box-shadow:0 0 8px rgba(255,180,84,.8)}
+  .bar .who{margin-left:.6cqw;font-size:1.2cqw;color:var(--amber-dim);letter-spacing:.02em}
+  .bar .stat{margin-left:auto;font-size:1.1cqw;color:#6f5a3c}
+
+  .body{padding:2cqw 2.1cqw 2.3cqw; font-size:1.72cqw; line-height:1.75}
+  .sys{color:#6f5a3c}
+  .sys .down{color:var(--decline)}
+  .row{margin-top:1.35cqw}
+  .tag{
+    display:inline-block; width:4.6cqw; color:var(--amber-dim);
+    text-transform:lowercase; letter-spacing:.04em;
+  }
+  .tag.you{color:#b89a6f}
+  .you-in{color:var(--cream)}
+  .cmd{color:var(--amber);text-shadow:0 0 16px rgba(255,180,84,.35)}
+  .meta{color:var(--grounded); font-size:1.28cqw; letter-spacing:.02em}
+  .meta .conf{color:var(--amber-dim); font-variant-numeric:tabular-nums}
+  .refuse{color:var(--decline)}
+  .cur{
+    display:inline-block;width:1.05cqw;height:1.8cqw;vertical-align:-.25cqw;
+    background:var(--amber);margin-left:.3cqw;box-shadow:0 0 10px rgba(255,180,84,.7);
+    animation:blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0}}
+  @media (prefers-reduced-motion:reduce){.cur{animation:none}}
+</style>
+
+<div class="stage">
+  <div class="poster">
+    <div class="grid">
+      <div class="left">
+        <div class="eyebrow">A Real, Local Operator</div>
+        <div class="wordmark">arlo</div>
+        <div class="expand">Lights-out ops for AI-managed apps.</div>
+
+        <div class="kicker">When your coding agent taps out, you can still run your own system — <b>it hands you the real command, and never invents one.</b></div>
+        <div class="foot">
+          <span class="repo">github.com/3dl-dev/arlo</span>
+          <span class="dot"></span>
+          <span>free &amp; open source</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="term">
+          <div class="bar">
+            <span class="led"></span><span class="led"></span><span class="led on"></span>
+            <span class="who">arlo — on shift</span>
+            <span class="stat">frontier: unreachable</span>
+          </div>
+          <div class="body">
+            <div class="sys">// your coding agent is <span class="down">rate-limited</span>. the app is down. it's 3am.</div>
+
+            <div class="row"><span class="tag you">you</span><span class="you-in">restart the deriver</span></div>
+            <div class="row"><span class="tag">arlo</span><span class="cmd">docker compose restart deriver</span></div>
+            <div class="row"><span class="tag"></span><span class="meta">grounded ✓ · from ops/compose.yml · <span class="conf">conf 0.94</span></span></div>
+
+            <div class="row" style="margin-top:1.9cqw"><span class="tag you">you</span><span class="you-in">roll back last night's migration</span></div>
+            <div class="row"><span class="tag">arlo</span><span class="refuse">no confident match — i won't guess.</span><span class="cur"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
