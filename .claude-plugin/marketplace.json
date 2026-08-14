@@ -1,0 +1,13 @@
+{
+  "name": "arlo",
+  "owner": { "name": "Chris Baron", "email": "baron@3dl.dev" },
+  "description": "arlo — A Real, Local Operator. Lights-out ops: type your own words and get the real command from your system's own ground truth. Never invents a command.",
+  "plugins": [
+    {
+      "name": "arlo",
+      "source": "./plugins/arlo",
+      "description": "The arlo operator: a grounded NL->command fallback for when the frontier is down. Ask your agent for the command you need; arlo answers from your project's real ground truth, or says no confident match.",
+      "version": "0.1.0"
+    }
+  ]
+}

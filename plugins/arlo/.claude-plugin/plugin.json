@@ -1,0 +1,4 @@
+{
+  "name": "arlo",
+  "description": "The arlo operator: a grounded NL->command fallback. Ask your agent for the command you need; arlo answers from your project's real ground truth, labeled with the trust it earned, and never invents one."
+}
