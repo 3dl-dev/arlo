@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+
+# rd (ready) build-tracking — local only, never ships with the standalone product
+.ready/

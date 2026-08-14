@@ -63,8 +63,8 @@ a command shape that is not ground truth, it violates the invariant, stop.
 
 ## Working here
 
-- Run the tests: `python3 tests/test_grounding.py && python3 tests/test_host_translate.py`
-  (both are hermetic, no model download).
+- Run the tests: `python3 tests/test_grounding.py && python3 tests/test_host_translate.py && python3 tests/test_ground.py`
+  (all hermetic, no model download).
 - The product surface is `SKILL.md`. Nobody runs the Python at a shell as the product;
   an agent invokes the skill. Running the `.py` is how you *grade the core*, legitimate,
   but it is not the product.

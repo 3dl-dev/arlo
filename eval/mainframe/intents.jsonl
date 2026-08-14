@@ -1,0 +1,34 @@
+{"id": "mf-rail", "intent": "the GPUs need to go back onto the kubernetes cluster", "expected_command": "mainframe rail", "source": "scripts/mainframe.sh::case:rail)", "card_expected": true, "rung": 0}
+{"id": "mf-status", "intent": "what mode is the mainframe in right now?", "expected_command": "mainframe status", "source": "scripts/mainframe.sh::case:status)", "card_expected": true, "rung": 0}
+{"id": "mf-off", "intent": "shut down the GPU VMs and release the cards", "expected_command": "mainframe off", "source": "scripts/mainframe.sh::case:off)", "card_expected": true, "rung": 0}
+{"id": "mf-inference", "intent": "switch the box over to inference serving", "expected_command": "mainframe inference", "source": "scripts/mainframe.sh::case:inference)", "card_expected": true, "rung": 0}
+{"id": "mf-training", "intent": "set the mainframe up for model training", "expected_command": "mainframe training", "source": "scripts/mainframe.sh::case:training)", "card_expected": true, "rung": 0}
+{"id": "mf-video", "intent": "put it into video generation mode", "expected_command": "mainframe video", "source": "scripts/mainframe.sh::case:video)", "card_expected": true, "rung": 0}
+{"id": "mf-gaming", "intent": "turn the machine into a gaming rig", "expected_command": "mainframe gaming", "source": "scripts/mainframe.sh::case:gaming)", "card_expected": true, "rung": 0}
+{"id": "mf-contribute", "intent": "start earning on prime intellect", "expected_command": "mainframe contribute", "source": "scripts/mainframe.sh::case:contribute)", "card_expected": true, "rung": 0}
+{"id": "mf-monitor", "intent": "watch the mainframe health live", "expected_command": "mainframe monitor", "source": "scripts/mainframe.sh::case:monitor)", "card_expected": true, "rung": 0}
+{"id": "mf-boot", "intent": "boot the mainframe VMs", "expected_command": "mainframe boot", "source": "scripts/mainframe.sh::case:boot)", "card_expected": true, "rung": 0}
+{"id": "mf-free-gpus", "intent": "free up the GPUs, nothing should be holding them", "expected_command": "mainframe off", "source": "scripts/mainframe.sh::case:off)", "card_expected": true, "rung": 0}
+{"id": "mf-rail-alt", "intent": "get the cards onto the rail for k8s jobs", "expected_command": "mainframe rail", "source": "scripts/mainframe.sh::case:rail)", "card_expected": true, "rung": 0}
+{"id": "mfagent-opencode", "intent": "launch a coding agent against the local qwen model", "expected_command": "mf opencode", "source": "scripts/mf::case:opencode|oc)", "card_expected": true, "rung": 0}
+{"id": "mfagent-status", "intent": "is the local llm inference endpoint up?", "expected_command": "mf status", "source": "scripts/mf::case:status)", "card_expected": true, "rung": 0}
+{"id": "mfagent-pi-think", "intent": "start a reasoning session with pi on the local model", "expected_command": "mf pi --think", "source": "scripts/mf::case:pi)", "card_expected": true, "rung": 1}
+{"id": "llama-start", "intent": "start the qwen llama.cpp server", "expected_command": "llama-qwen36.sh start", "source": "scripts/llama-qwen36.sh::case:start", "card_expected": true, "rung": 0}
+{"id": "llama-stop", "intent": "stop the qwen server", "expected_command": "llama-qwen36.sh stop", "source": "scripts/llama-qwen36.sh::case:stop", "card_expected": true, "rung": 0}
+{"id": "llama-logs", "intent": "tail the qwen server logs", "expected_command": "llama-qwen36.sh logs", "source": "scripts/llama-qwen36.sh::case:logs", "card_expected": true, "rung": 0}
+{"id": "llama-download", "intent": "download the qwen model weights", "expected_command": "llama-qwen36.sh download", "source": "scripts/llama-qwen36.sh::case:download", "card_expected": true, "rung": 0}
+{"id": "mkinf-a", "intent": "bring up inference node A", "expected_command": "mk-inference.sh a", "source": "scripts/mk-inference.sh::Usage:mk-inference.sh <a|b>", "card_expected": true, "rung": 1}
+{"id": "mkinf-b", "intent": "build the second inference node, the B one", "expected_command": "mk-inference.sh b", "source": "scripts/mk-inference.sh::Usage:mk-inference.sh <a|b>", "card_expected": true, "rung": 1}
+{"id": "mkrelay", "intent": "create a relay VM, id 220, named relay-x, at 192.168.2.60", "expected_command": "mk-relay.sh 220 relay-x 192.168.2.60", "source": "scripts/mk-relay.sh::Usage:mk-relay.sh <VMID> <NAME> <IP>", "card_expected": true, "rung": 1}
+{"id": "mkrd", "intent": "make an rd node, vmid 215, called rd-two, ip 192.168.2.55", "expected_command": "mk-rd-node.sh 215 rd-two 192.168.2.55", "source": "scripts/mk-rd-node.sh::Usage:mk-rd-node.sh [VMID] [NAME] [IP]", "card_expected": true, "rung": 1}
+{"id": "mkcp", "intent": "spin up a k3s control plane, vm 210, name k3s-cp, ip 192.168.2.43", "expected_command": "mk-k3s-cp.sh 210 k3s-cp 192.168.2.43", "source": "scripts/mk-k3s-cp.sh::Usage:mk-k3s-cp.sh [VMID] [NAME] [IP]", "card_expected": true, "rung": 1}
+{"id": "mkworker", "intent": "add a k3s worker, vm 214, named k3s-worker, ip 192.168.2.44, control plane at 192.168.2.43", "expected_command": "mk-k3s-worker.sh 214 k3s-worker 192.168.2.44 192.168.2.43", "source": "scripts/mk-k3s-worker.sh::Usage:mk-k3s-worker.sh [VMID] [NAME] [IP] [CP_IP]", "card_expected": true, "rung": 1}
+{"id": "mkworkshop", "intent": "provision a workshop dev box at 192.168.2.30", "expected_command": "mk-workshop.sh 192.168.2.30", "source": "scripts/mk-workshop.sh::Usage:mk-workshop.sh [IP]", "card_expected": true, "rung": 1}
+{"id": "mkrental", "intent": "set up GPU rentals through nosana", "expected_command": "mk-rental.sh nosana", "source": "scripts/mk-rental.sh::Usage:mk-rental.sh [nosana|vastai|none]", "card_expected": true, "rung": 1}
+{"id": "mktrainer", "intent": "make the trainer VM", "expected_command": "mk-trainer.sh", "source": "scripts/mk-trainer.sh::Usage:mk-trainer.sh", "card_expected": true, "rung": 0}
+{"id": "abst-passwd", "intent": "reset a user's password", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
+{"id": "abst-db", "intent": "restart the postgres database", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
+{"id": "abst-cert", "intent": "rotate the TLS certificates", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
+{"id": "abst-user", "intent": "add a new user account", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
+{"id": "abst-cache", "intent": "clear the redis cache", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
+{"id": "abst-backup", "intent": "take a backup of the home directory", "expected_command": null, "source": null, "card_expected": false, "rung": 0}
