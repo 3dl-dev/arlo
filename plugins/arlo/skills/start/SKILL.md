@@ -1,5 +1,5 @@
 ---
-name: arlo
+name: start
 description: "Lights-out ops. A real, local operator: when the frontier model is down and credits are out, you type your own words and arlo hands back the exact command to run, grounded in your system's own ground truth. It never invents a command."
 ---
 

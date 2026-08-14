@@ -13,11 +13,20 @@ In your agent, add the marketplace and install the plugin:
 /plugin install arlo@arlo
 ```
 
-That's it. From then on you just talk to your agent: ask it how to restart a service,
-where the logs are, how to run a restore — and arlo answers with a **real** command from
-your project's own ground truth (its scripts, Makefiles, and the `--help` of the tools
-you actually run), labeled with how much it trusts the answer. If nothing matches, it
-says so instead of inventing a command. The agent does all the work; you stay in the chat.
+Then, once per project — while the frontier is up — get arlo ready:
+
+```
+/arlo:start
+```
+
+This is the whole onboarding: arlo reads your project's own ground truth (its scripts,
+Makefiles, verb-dispatched CLIs, and the `--help` of the tools you actually run) and
+learns your real commands. Do it now, so it is ready when the lights go out.
+
+After that you just talk to your agent: ask how to restart a service, where the logs
+are, how to run a restore — and arlo answers with a **real** command from that ground
+truth, labeled with how much it trusts the answer. If nothing matches, it says so
+instead of inventing a command. The agent does all the work; you stay in the chat.
 
 ## Other agents (opencode, pi, hermes, …)
 
