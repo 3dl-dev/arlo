@@ -61,8 +61,10 @@ class HostRunPath(unittest.TestCase):
 
         # translate a query with arlo's deterministic embedder: it must return a
         # real card's command verbatim, never a synthesized one.
+        # vocab built from the real cards with arlo's own stemmer (not a hand-list), so
+        # the embedder tokenizes and indexes on the same ground it will in production.
         embed = translate.bag_of_words_embedder(
-            {"restart", "workshop", "instances", "bounce", "list", "directory", "ls", "file"})
+            translate.vocabulary([c["purpose"] + " " + c["command"] for c in cs]))
         hits = translate.rank(embed, cs, "restart the workshop instances")
         self.assertTrue(hits)
         commands = {c["command"] for c in cs}

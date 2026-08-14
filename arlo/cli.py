@@ -47,7 +47,7 @@ def _embedder(cards, config):
             return translate.sentence_transformer_embedder(model), True
         except Exception:  # noqa: BLE001 — model absent/unreachable: fall back, do not fail
             pass
-    vocab = sorted({w for c in cards for w in translate._stems(c["purpose"] + " " + c["command"])})
+    vocab = translate.vocabulary([c["purpose"] + " " + c["command"] for c in cards])
     return translate.bag_of_words_embedder(vocab), False
 
 

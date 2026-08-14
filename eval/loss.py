@@ -28,7 +28,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from arlo import cards, binder  # noqa: E402
+from arlo import cards, binder, translate  # noqa: E402
 
 _CHOICE_RE = re.compile(r"[<\[]([^<>\[\]]*\|[^<>\[\]]*)[>\]]")
 
@@ -72,19 +72,59 @@ def cardable(command, card_cmds):
     return False
 
 
+def _intent_rows(path):
+    """Full rows when the reference is an intents file (natural intent + expected command
+    + card_expected). Empty for a command-only reference (retrieval can't be graded there
+    without authored intents)."""
+    rows = []
+    for line in open(os.path.join(HERE, "..", path)).read().splitlines():
+        if line.strip():
+            r = json.loads(line)
+            if "intent" in r and ("expected_command" in r or "card_expected" in r):
+                rows.append(r)
+    return rows
+
+
+def _retrieval_and_abstention(cs, intent_rows, floor=0.15):
+    """Grade the CLI's model-free path: does rank() select the card whose command matches
+    the expected one (retrieval), and does it correctly decline when no card should match
+    (abstention)? Uses the same bag-of-words embedder arlo falls back to with no model."""
+    vocab = translate.vocabulary([c["purpose"] + " " + c["command"] for c in cs])
+    embed = translate.bag_of_words_embedder(vocab)
+    card_cmds = [c["command"] for c in cs]
+    ret_total = ret_miss = abs_total = abs_wrong = 0
+    ret_fails = []
+    for r in intent_rows:
+        hits = translate.rank(embed, cs, r["intent"], top=1)
+        top = hits[0] if hits else None
+        if r.get("card_expected"):
+            ret_total += 1
+            got = top["command"] if top and top["score"] >= floor else None
+            if not (got and cardable(r["expected_command"], [got])):
+                ret_miss += 1
+                ret_fails.append((r["intent"], r["expected_command"], got or "(abstained)"))
+        else:  # should abstain
+            abs_total += 1
+            if top and top["score"] >= floor:
+                abs_wrong += 1
+    return {
+        "ret_total": ret_total, "ret_miss": ret_miss, "ret_fails": ret_fails,
+        "abs_total": abs_total, "abs_wrong": abs_wrong,
+    }
+
+
 def score_project(p):
     cs = cards.build_cards(p["spec"], root=p["root"])
     card_cmds = [c["command"] for c in cs]
     ref = _reference_commands(p["reference"])
     misses = [c for c in ref if not cardable(c, card_cmds)]
-    # invariant sentinel: a generated card always has a source; a card with no source or
-    # empty command would be a fabricated command (should never happen).
     fabricated = [c for c in cs if not c.get("command") or not c.get("source")]
     harvest_loss = len(misses) / len(ref) if ref else 0.0
+    rq = _retrieval_and_abstention(cs, _intent_rows(p["reference"]))
     return {
         "name": p["name"], "cards": len(cs), "reference": len(ref),
         "covered": len(ref) - len(misses), "harvest_loss": harvest_loss,
-        "misses": misses, "invariant_violations": len(fabricated),
+        "misses": misses, "invariant_violations": len(fabricated), **rq,
     }
 
 
@@ -103,15 +143,25 @@ def main():
 
     print("=== arlo STEP-3 loss (model-free components; read-only harvest) ===\n")
     tot_ref = tot_cov = tot_inv = 0
+    tot_rt = tot_rm = tot_at = tot_aw = 0
     for r in results:
         tot_ref += r["reference"]; tot_cov += r["covered"]; tot_inv += r["invariant_violations"]
+        tot_rt += r["ret_total"]; tot_rm += r["ret_miss"]; tot_at += r["abs_total"]; tot_aw += r["abs_wrong"]
+        rl = f"  retrieval={r['ret_total']-r['ret_miss']}/{r['ret_total']}" if r["ret_total"] else ""
+        al = f"  abstain={r['abs_total']-r['abs_wrong']}/{r['abs_total']}" if r["abs_total"] else ""
         print(f"[{r['name']:<10}] cards={r['cards']:<3} coverage={r['covered']}/{r['reference']}"
-              f"  harvest_loss={r['harvest_loss']:.2f}  invariant_violations={r['invariant_violations']}")
+              f"  harvest_loss={r['harvest_loss']:.2f}{rl}{al}  inv={r['invariant_violations']}")
         for m in r["misses"]:
             print(f"              gradient (harvestability): no card for  '{m}'")
+        for intent, exp, got in r["ret_fails"]:
+            print(f"              gradient (retrieval): '{intent}' -> got {got}, want `{exp}`")
     agg = 1 - (tot_cov / tot_ref) if tot_ref else 0.0
+    ret_loss = tot_rm / tot_rt if tot_rt else 0.0
+    abs_loss = tot_aw / tot_at if tot_at else 0.0
     print(f"\nAGGREGATE harvestability loss: {tot_ref - tot_cov}/{tot_ref} = {agg:.2f}"
           f"   |   invariant violations: {tot_inv} (must be 0)")
+    print(f"AGGREGATE retrieval loss (model-free floor): {tot_rm}/{tot_rt} = {ret_loss:.2f}"
+          f"   |   abstention loss: {tot_aw}/{tot_at} = {abs_loss:.2f}")
     print("\nbackprop (each gradient -> the upstream artifact to change):")
     for k, v in ATTRIBUTION.items():
         print(f"  {k:<28} -> {v}")

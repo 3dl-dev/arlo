@@ -94,17 +94,30 @@ def sentence_transformer_embedder(model_name="all-MiniLM-L6-v2"):
     return embed
 
 
+def vocabulary(texts):
+    """The stem vocabulary of a corpus — the tokens the bag-of-words embedder indexes.
+    Built with the SAME stemmer the embedder tokenizes with, so a card's words and the
+    query's words meet on the same ground (gpus~gpu, instances~instance)."""
+    return sorted({w for t in texts for w in _stems(t)})
+
+
 def bag_of_words_embedder(vocab):
-    """A deterministic, model-free embedder for tests: a normalized indicator
-    vector over a fixed vocabulary. No semantics, but enough to prove grounding
-    and ranking mechanics without downloading a model."""
+    """A deterministic, model-free embedder: a normalized indicator vector over a fixed
+    stem vocabulary. No real semantics, but with morphological stemming it is enough to
+    rank real cards without downloading a model — arlo's offline floor when no LOM is
+    configured. Tokenize with `_stems`, the same function that built `vocab`; a mismatch
+    here (stems vs raw words) makes every vector zero and ranking degenerates to one card
+    (found via the STEP-3 retrieval loss, 2026-08-14)."""
     vocab = list(vocab)
+    index = {w: i for i, w in enumerate(vocab)}
 
     def embed(texts):
         out = []
         for t in texts:
-            toks = set(t.lower().replace("/", " ").replace("-", " ").split())
-            v = [1.0 if w in toks else 0.0 for w in vocab]
+            v = [0.0] * len(vocab)
+            for w in _stems(t):
+                if w in index:
+                    v[index[w]] = 1.0
             n = math.sqrt(sum(x * x for x in v)) or 1.0
             out.append([x / n for x in v])
         return out
