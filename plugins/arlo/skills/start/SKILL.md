@@ -181,13 +181,27 @@ ground truth. Climb only as far as needed; label every answer with its rung.
 - **Rung 3 — explain** *(full grounding)*: narrate from the command's own `--help`, never
   memory; `ground.cited_flags_grounded(narration, help)` requires every cited flag to be a
   whole token in the help (`--parent` is not satisfied by `--parent-id`).
-- **Rung 4 — compose** *(less-trusted)*: `ground.compose(cards, ids)` emits real cards in
-  order, dropping non-cards; show steps discretely, verify the order. For a **multi-party/
-  multi-host** op, persist and present the per-step **actor/where + handoffs** from each verb's
-  `--help` (`[owner, here] <mint-invite>` / `[joiner, their box] <redeem+report>` / `[owner,
-  here] <grant>`) — bare
-  verbs read as a single-operator script. Include prose **prelude/verify** steps (auth/env,
-  post-checks) as atoms; if one can't be grounded, drop it and say so.
+- **Rung 4 — compose / infer a grounded multi-step process** *(less-trusted)*: a high-level
+  goal ("start the app", "recover the worker", "get a cold box able to operate the cluster")
+  rarely maps to one card — infer the ordered process. Two sources, same grounding: chain
+  pre-harvested cards (`ground.compose(cards, ids)`, which drops non-cards), and/or **infer the
+  steps from the project's reference data** — the sequence a runbook or README documents —
+  grounding EACH emitted step with `ground.card_grounded(command, source)` and dropping any that
+  will not ground. Rules that keep this honest (each proven in real use):
+  - **Give exactly what the goal needs — one command if one suffices** (a target whose recipe
+    already does start-and-health is the whole answer); never pad to look multi-step.
+  - Mark a precondition that may already hold **[conditional]** (auth/env — `op signin`, `direnv
+    allow`); the operator skips it if done.
+  - Include prose **prelude/verify** steps as grounded atoms; for a **multi-party/multi-host**
+    op, present per-step **actor/where + handoffs** (`[owner, here] <mint-invite>` / `[joiner,
+    their box] <redeem+report>` / `[owner, here] <grant>`) — bare verbs read as a single-operator
+    script.
+  - **Flag an honest gap, never fill it** — a step the goal needs but the reference never
+    documents (a `kubeconfig`/`get-credentials` the docs assume) is surfaced as a gap in an
+    otherwise-grounded runbook, not invented.
+  - **Abstain on the whole goal** if no grounded process exists (a rollback with no documented
+    procedure) rather than fabricate a plausible one.
+  Show steps discretely, label less-trusted — verify the order.
 - **Rung 5 — propose** *(review-required)*: draft a card and call `ground.card_grounded(command,
   source)` — the skeleton must appear verbatim (it joins backslash-continued lines and collapses
   whitespace first). Label grounded-to-source, not-yet-ground-truth. Prefer a **live**
