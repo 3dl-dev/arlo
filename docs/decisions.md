@@ -275,6 +275,15 @@ binding a wrong card ≥ 90% of the time.
 
 ### STEP 3 is an optimization loop, not a one-shot grade (reframe 2026-08-14)
 
+> **The outer loop is hoist's, not arlo's (decided 2026-08-15).** "Run a bundle, score its run,
+> iterate" is a hoist(able) builder-layer skill (`core/optimize-loop/SKILL.md`, invoked as
+> `/hoistable:optimize`); arlo is a *consumer* — a bundle it optimizes. Do NOT fork it into this
+> repo: a copy was parked here while it was derived and has been deleted; use the invoke path.
+> The skill carries the hard-won trap list (verify-don't-fabricate, no-thumb-on-scale,
+> score-what-decides-success, improve-bundle-not-apparatus, inner-vs-outer-ring, single-sample
+> noise). Its companion is the *inner* loop now in `SKILL.md` rung 4: arlo distills each verified
+> inference into `.arlo/` through use, so the outer loop stays small.
+
 STEP 3 is a **test that produces a loss function, back-propagated through the two upstream
 artifacts — the hoist distribution (STEP 2) and the skill toolset (STEP 1) — to optimize
 them**, and it runs across **all the pointed-at projects** (`mainframe`, `ready`, `vms`,
