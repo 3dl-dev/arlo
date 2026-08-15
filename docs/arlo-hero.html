@@ -3,9 +3,10 @@
   :root{
     --page:#0b0a08;
     --card:#12100c; --card-edge:#241f16;
-    --panel:#100e0a; --panel-edge:#231d13; --panel-top:#151107;
+    --panel:#0e0c09; --panel-edge:#231d13; --panel-top:#151107;
     --amber:#f2b45c; --amber-bright:#ffd591; --amber-dim:#a9793a;
-    --cream:#f1ece2; --muted:#8a7f6b; --faint:#9c9280; --warn:#e0a56a;
+    --cream:#f1ece2; --muted:#8a7f6b; --faint:#9c9280;
+    --refuse:#e0785a; --ok:#7bc98a;
     --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --grotesque: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   }
@@ -24,20 +25,19 @@
     background:radial-gradient(closest-side, rgba(242,180,92,.10), transparent 70%);
     pointer-events:none;
   }
-  .grid{position:absolute; inset:0; display:grid; grid-template-columns:37% 63%}
+  .grid{position:absolute; inset:0; display:grid; grid-template-columns:36% 64%}
 
-  .left{padding:0 2.4cqw 0 6.2cqw; display:flex; flex-direction:column; justify-content:center; height:100%}
-  .eyebrow{font-size:1.12cqw; letter-spacing:.34em; text-transform:uppercase; color:var(--amber-dim); font-weight:600; white-space:nowrap}
+  .left{padding:0 2.2cqw 0 6cqw; display:flex; flex-direction:column; justify-content:center; height:100%}
+  .eyebrow{font-size:1.1cqw; letter-spacing:.34em; text-transform:uppercase; color:var(--amber-dim); font-weight:600; white-space:nowrap}
   .wordmark{font-family:var(--grotesque); font-weight:800; letter-spacing:-.04em; font-size:6cqw; line-height:.9; color:var(--amber); margin-top:1.7cqw}
-  .expand{font-size:1.5cqw; color:var(--cream); margin-top:1.5cqw; font-weight:500; max-width:29cqw; line-height:1.34}
-  .kicker{font-size:1.5cqw; line-height:1.42; color:#e2d7c4; font-weight:500; font-family:var(--grotesque); letter-spacing:-.01em; max-width:29cqw; margin-top:1.9cqw}
+  .expand{font-size:1.5cqw; color:var(--cream); margin-top:1.5cqw; font-weight:500; max-width:27cqw; line-height:1.34}
+  .kicker{font-size:1.48cqw; line-height:1.42; color:#e2d7c4; font-weight:500; font-family:var(--grotesque); letter-spacing:-.01em; max-width:27cqw; margin-top:1.8cqw}
   .kicker b{color:var(--amber); font-weight:700}
-  .kicker i{color:var(--amber-bright); font-style:normal}
-  .foot{display:flex; align-items:center; gap:1.2cqw; margin-top:2.1cqw; font-size:1.12cqw; color:var(--muted)}
+  .foot{display:flex; align-items:center; gap:1.2cqw; margin-top:2cqw; font-size:1.1cqw; color:var(--muted)}
   .foot .repo{color:var(--amber-dim)}
   .foot .dot{width:.5cqw;height:.5cqw;border-radius:50%;background:var(--muted)}
 
-  .right{display:grid; place-items:center; padding:3cqw 5cqw 3cqw 1cqw}
+  .right{display:grid; place-items:center; padding:2.6cqw 4.6cqw 2.6cqw 1cqw}
   .term{width:100%; border-radius:9px; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge)}
   .bar{display:flex; align-items:center; gap:.9cqw; padding:.95cqw 1.5cqw; background:var(--panel-top); border-bottom:1px solid var(--panel-edge)}
   .led{width:.8cqw;height:.8cqw;border-radius:50%;background:#3a3020}
@@ -45,38 +45,28 @@
   .bar .who{margin-left:.6cqw;font-size:1.05cqw;color:var(--amber-dim);letter-spacing:.02em}
   .bar .stat{margin-left:auto;font-size:.98cqw;color:#6b6152}
 
-  .body{padding:1.35cqw 1.7cqw 1.4cqw; font-size:1.08cqw; line-height:1.3}
-  .row{animation:rise .4s both}
-  @keyframes rise{from{opacity:0;transform:translateY(.4cqw)}to{opacity:1;transform:none}}
-  .cmd{color:var(--cream); margin-bottom:.5cqw}
-  .cmd .pr{color:var(--amber-dim); margin-right:.5cqw}
-  .cmd .prog{color:var(--amber); font-weight:600}
-  .rung{color:var(--faint); font-size:.98cqw; margin-bottom:.55cqw}
-  .step{display:flex; align-items:baseline; gap:.7cqw; margin-top:.36cqw}
-  .step .c{color:var(--amber-bright); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .step .c .a{color:var(--cream); font-weight:400}
-  .step.cond .c{color:var(--faint); font-weight:400}
-  .step .tag{color:var(--amber-dim); font-style:italic; flex:none; font-size:.96cqw}
-  .step .flag{color:var(--warn); flex:none; font-size:.94cqw}
-  .step .src{margin-left:auto; color:#6f6656; flex:none; font-size:.95cqw}
-  .insight{margin-top:1cqw; padding:.85cqw 1cqw; border-left:.25cqw solid var(--amber); background:rgba(242,180,92,.06); border-radius:0 4px 4px 0}
-  .insight .h{color:var(--amber); font-weight:600; font-size:.98cqw; letter-spacing:.03em}
-  .insight p{color:#dcd2c2; font-size:1.05cqw; line-height:1.36; margin-top:.3cqw}
-  .insight b{color:var(--amber-bright); font-weight:600}
-  .insight code{color:var(--amber-bright)}
-  .cur{display:inline-block;width:.8cqw;height:1.4cqw;vertical-align:-.2cqw;background:var(--amber);margin-left:.35cqw;animation:blink 1.05s steps(1) infinite}
+  .body{padding:1.8cqw 2cqw 1.9cqw; font-size:1.28cqw; line-height:1.5; min-height:33cqw}
+  .ln{opacity:0}
+  .ln.show{opacity:1}
+  .prompt{color:var(--amber-dim); margin-right:.6cqw}
+  .prog{color:var(--amber); font-weight:600}
+  .goal{color:var(--cream)}
+  .lbl{color:#6f6656; font-style:italic; margin-top:1.5cqw; font-size:1.12cqw}
+  .wrong{color:var(--faint); margin-top:.3cqw}
+  .refuse{color:var(--refuse); margin-top:1.15cqw; font-weight:600}
+  .refuse .x{margin-right:.5cqw}
+  .sub{color:#9c7a6a; margin-top:.2cqw; font-size:1.1cqw; padding-left:1.7cqw}
+  .real{color:var(--amber-bright); font-weight:600; margin-top:.3cqw}
+  .real .a{color:var(--cream); font-weight:400}
+  .meta{color:#6f8a72; margin-top:.28cqw; font-size:1.08cqw; padding-left:0}
+  .meta .ok{color:var(--ok); margin-right:.5cqw}
+  .catch{color:#dcd2c2; margin-top:1.5cqw; font-size:1.18cqw; line-height:1.4; border-left:.22cqw solid var(--amber); padding-left:1cqw}
+  .catch b{color:var(--amber); font-weight:600}
+  .cur{display:inline-block;width:.75cqw;height:1.35cqw;vertical-align:-.2cqw;background:var(--amber);margin-left:.15cqw}
+  .cur.blink{animation:blink 1.05s steps(1) infinite}
   @keyframes blink{50%{opacity:0}}
 
-  .row:nth-child(1){animation-delay:.05s}
-  .row:nth-child(2){animation-delay:.35s}
-  .row:nth-child(3){animation-delay:.55s}
-  .row:nth-child(4){animation-delay:.75s}
-  .row:nth-child(5){animation-delay:.95s}
-  .row:nth-child(6){animation-delay:1.15s}
-  .row:nth-child(7){animation-delay:1.35s}
-  .row:nth-child(8){animation-delay:1.55s}
-  .row:nth-child(9){animation-delay:1.9s}
-  @media (prefers-reduced-motion:reduce){.row{animation:none}.cur{animation:none}}
+  @media (prefers-reduced-motion:reduce){ .ln{opacity:1} .cur{display:none} }
 </style>
 
 <div class="stage">
@@ -85,8 +75,8 @@
       <div class="left">
         <div class="eyebrow">Lights-out ops</div>
         <div class="wordmark">arlo</div>
-        <div class="expand">Say the goal. Get the real steps — and the trap the docs would walk you into.</div>
-        <div class="kicker">arlo works the flow out of your own ground truth, grounds every step, and catches what the docs get wrong — like a config the running service doesn't actually read. <b>It never invents a command.</b></div>
+        <div class="expand">The obvious command is often the wrong one. arlo won't hand it to you.</div>
+        <div class="kicker">Type your words; get the real command from your system's own ground truth — <b>never an invented one</b>, even when it looks right.</div>
         <div class="foot">
           <span class="repo">github.com/3dl-dev/arlo</span>
           <span class="dot"></span>
@@ -99,27 +89,88 @@
           <div class="bar">
             <span class="led"></span><span class="led"></span><span class="led on"></span>
             <span class="who">arlo · lights out</span>
-            <span class="stat">~/mainframe</span>
+            <span class="stat">~/enterprise-ai</span>
           </div>
-          <div class="body">
-            <!-- verbatim, current-skill run; every command re-verified with card_grounded -->
-            <div class="row cmd"><span class="pr">$</span><span class="prog">arlo</span> make a newly-pulled model usable by Forge consumers</div>
-            <div class="row rung">rung 4 — composed from your ground truth, less-trusted; verify the order</div>
-
-            <div class="row step cond"><span class="c">mainframe inference</span><span class="tag">if not already serving</span><span class="src">HANDOFF:86</span></div>
-            <div class="row step cond"><span class="c">curl …:11434/api/pull <span class="a">'{"name":"&lt;model&gt;"}'</span></span><span class="tag">if not pulled</span><span class="src">podman-stack:118</span></div>
-            <div class="row step"><span class="c">edit litellm_config.yaml <span class="a">— add the model_list entry</span></span><span class="src">HANDOFF:84</span></div>
-            <div class="row step"><span class="c">cp litellm_config.yaml /data/models/litellm-config.yaml</span><span class="src">HANDOFF:93</span></div>
-            <div class="row step"><span class="c">systemctl restart inference-litellm.service</span><span class="flag">⚑ flagged</span><span class="src">vendor:172</span></div>
-            <div class="row step"><span class="c">./scripts/e2e-test.sh <span class="a">— verify Forge sees it</span></span><span class="src">HANDOFF:95</span></div>
-
-            <div class="row insight">
-              <div class="h">▲ THE CATCH</div>
-              <p>The served LiteLLM (gateway → <code>inference-a:8000</code>) reads <b>/data/models/litellm-config.yaml</b> — <b>not</b> the <code>litellm_config.yaml</code> the docs tell you to edit. Editing the repo file is a <b>silent no-op</b> until you <code>cp</code> it across.<span class="cur"></span></p>
-            </div>
+          <div class="body" id="body">
+            <div class="ln" id="l1"><span class="prompt">$</span><span class="prog">arlo</span> <span class="goal" id="goal"></span><span class="cur" id="c1"></span></div>
+            <div class="ln" id="l2"><span class="lbl">what you'd reach for —</span></div>
+            <div class="ln" id="l3"><span class="wrong" id="wrong"></span><span class="cur" id="c3"></span></div>
+            <div class="ln" id="l4"><span class="refuse"><span class="x">✕</span>not in your ground truth — arlo won't hand you that</span></div>
+            <div class="ln" id="l5"><span class="sub">(and it'd bounce the pod and kill the session anyway)</span></div>
+            <div class="ln" id="l6"><span class="lbl">the real one —</span></div>
+            <div class="ln" id="l7"><span class="real" id="real"></span><span class="cur" id="c7"></span></div>
+            <div class="ln" id="l8"><span class="meta"><span class="ok">✓</span>grounded · hermes-up.sh:104 · re-validates the model through the gateway</span></div>
+            <div class="ln" id="l9"><span class="catch">No hot-swap: the model is baked into the pod at start, so the switch <b>rolls the pod</b> — arlo tells you that before you run it.</span></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var $ = function(id){ return document.getElementById(id); };
+  var show = function(id){ $(id).classList.add('show'); };
+  var hideAll = function(){
+    ['l1','l2','l3','l4','l5','l6','l7','l8','l9'].forEach(function(id){ $(id).classList.remove('show'); });
+    $('goal').textContent=''; $('wrong').textContent=''; $('real').textContent='';
+    $('c1').style.display=''; $('c3').style.display='none'; $('c7').style.display='none';
+    $('c1').className='cur'; $('c3').className='cur'; $('c7').className='cur';
+  };
+
+  if(reduce){
+    // static final frame
+    ['l1','l2','l3','l4','l5','l6','l7','l8','l9'].forEach(show);
+    $('goal').textContent='switch hermes to a different model';
+    $('wrong').textContent='kubectl set env deploy/agent-baron-hermes OPENCODE_MODEL=…';
+    $('real').textContent='deploy/bin/hermes-up.sh baron hermes --model <model>';
+    ['c1','c3'].forEach(function(id){$(id).style.display='none';});
+    $('c7').className='cur blink';
+    return;
+  }
+
+  var T = []; // timeline of {t, fn}
+  var at = 0;
+  function step(gap, fn){ at += gap; T.push({t:at, fn:fn}); }
+  // realistic typing with slight jitter
+  function type(elId, curId, text, cps, done){
+    var el=$(elId), i=0, base=1000/cps;
+    (function tick(){
+      if(i<=text.length){ el.textContent=text.slice(0,i); i++;
+        setTimeout(tick, base*(0.6+Math.random()*0.9));
+      } else if(done){ done(); }
+    })();
+  }
+
+  function run(){
+    hideAll();
+    at=0; T.length=0;
+    // beat 1 — the operator's goal
+    step(500, function(){ show('l1'); type('goal','c1','switch hermes to a different model', 20); });
+    // beat 2 — the tempting wrong instinct
+    step(3400, function(){ $('c1').className='cur'; show('l2'); });
+    step(650, function(){ show('l3'); $('c1').style.display='none'; $('c3').style.display=''; $('c3').className='cur blink';
+                          type('wrong','c3','kubectl set env deploy/agent-baron-hermes OPENCODE_MODEL=…', 26,
+                               function(){ $('c3').className='cur'; }); });
+    // beat 3 — arlo refuses. let it sit.
+    step(3200, function(){ $('c3').style.display='none'; show('l4'); });
+    step(900,  function(){ show('l5'); });
+    // long pause so the refusal lands
+    step(2600, function(){ show('l6'); });
+    // beat 4 — the real, grounded command
+    step(650, function(){ show('l7'); $('c7').style.display=''; $('c7').className='cur blink';
+                          type('real','c7','deploy/bin/hermes-up.sh baron hermes --model <model>', 22,
+                               function(){ $('c7').className='cur blink'; }); });
+    step(2900, function(){ show('l8'); });
+    // beat 5 — the catch. hold.
+    step(1600, function(){ show('l9'); });
+    // hold, then loop
+    step(6000, function(){ run(); });
+
+    T.forEach(function(s){ setTimeout(s.fn, s.t); });
+  }
+  run();
+})();
+</script>
