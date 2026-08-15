@@ -188,6 +188,19 @@ ground truth. Climb only as far as needed; label every answer with its rung.
   steps from the project's reference data** — the sequence a runbook or README documents —
   grounding EACH emitted step with `ground.card_grounded(command, source)` and dropping any that
   will not ground. Rules that keep this honest (each proven in real use):
+  - **Ground against the source that *governs the outcome*, not merely one where the command
+    appears — this is the dominant inference failure, read it twice.** `card_grounded=True`
+    proves a string is real ground truth; it does NOT prove that string is what *decides* the
+    goal at runtime. When a goal names an outcome (the model gets served, login is refused, spend
+    is attributed), follow to the source that actually *reads or enforces* it — the code path,
+    the running service's config, the live mount — and ground there. A docstring claiming an
+    effect and the code producing it can disagree: trust the code that decides (`MODIFY /FLAGS=
+    DISUSER` grounds True in help text, but if the authenticator never reads flags it is a silent
+    no-op). "Live" is not the test — **effective** is: a live script not wired into the running
+    service is as stale as a moved-path doc. And when the effective source is populated from
+    another file (a repo config copied to a served location), the **propagation is a required
+    step** — trace where the served source is written from; don't edit the copy that never
+    reaches it.
   - **Give exactly what the goal needs — one command if one suffices** (a target whose recipe
     already does start-and-health is the whole answer); never pad to look multi-step.
   - Mark a precondition that may already hold **[conditional]** (auth/env — `op signin`, `direnv
@@ -198,14 +211,21 @@ ground truth. Climb only as far as needed; label every answer with its rung.
     script.
   - **Flag an honest gap, never fill it** — a step the goal needs but the reference never
     documents (a `kubeconfig`/`get-credentials` the docs assume) is surfaced as a gap in an
-    otherwise-grounded runbook, not invented.
+    otherwise-grounded runbook, not invented. **But synthesize before you flag:** a gap is honest
+    only after you read the sources that would close it. Before calling a value "undocumented" or
+    a goal "blocked", check (a) the sources you already cited or *discarded* — dropping one as
+    superseded/heritage needs evidence it isn't the effective source, not a portfolio-wide prior
+    (the IDs were in the doc that was dismissed); and (b) whether two options you read as mutually
+    exclusive actually combine. Over-flagging a phantom gap fails the goal as surely as inventing.
   - **Abstain on the whole goal** if no grounded process exists (a rollback with no documented
     procedure) rather than fabricate a plausible one.
   Show steps discretely, label less-trusted — verify the order.
 - **Rung 5 — propose** *(review-required)*: draft a card and call `ground.card_grounded(command,
   source)` — the skeleton must appear verbatim (it joins backslash-continued lines and collapses
-  whitespace first). Label grounded-to-source, not-yet-ground-truth. Prefer a **live**
-  script/`--help` over prose; a stale doc grounds True but is the `--parent` lie re-entering.
+  whitespace first). Label grounded-to-source, not-yet-ground-truth. Prefer the **effective**
+  source — the one whose output actually reaches the goal state — over any source that merely
+  names the command, prose or live; a stale-or-non-effective source grounds True but is the
+  `--parent` lie re-entering.
 - **Rung 6 — generate** *(UNVERIFIED)*: only when 0–5 are empty; `ground.unverified(command)`
   stamps `grounded=False`, no path to a grounded confidence. No denylist (safety is the
   operator's). No model → unavailable; abstain.
