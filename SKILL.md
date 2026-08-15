@@ -38,9 +38,20 @@ Every answer is **labeled with the trust it earned**. Climb only as far as the a
 arlo names no model. The LOM is a gradient you resolve here from what this operator has and
 this project needs: often the model now running this skill (ranking cards directly, no
 embedder); or a local model/endpoint; or a small instruct model or CPU embedder
-(`arlo/provision.sh` stands up that last option — not a default). Pick the best fit and
-provision it while the frontier is up. Pinning one model is the thumb-on-the-scale arlo exists
-to avoid (invariant #4, resolve don't hardcode). The grounding core keeps whatever you bring honest.
+(`arlo/provision.sh` stands up that last option — not a default). Pinning one model is the
+thumb-on-the-scale arlo exists to avoid (invariant #4, resolve don't hardcode). The grounding
+core keeps whatever you bring honest.
+
+**Resolve a ladder, not a point, and record it for runtime escalation.** "Frontier down" is
+rarely binary — the *primary* API being gone doesn't mean *every* capable model is. So at
+setup, while the lights are on, resolve and record an ordered escalation ladder into
+`.arlo/config.json`: the cheap default (a small local model or the offline lexical floor), then
+what to climb to when it isn't enough — a bigger local model on the operator's hardware, an
+alternate API from a different provider, a self-hosted endpoint. At use, run the default; when a
+goal is hard (a novel multi-step inference the captured flows don't cover, or a low-confidence
+answer), **escalate up the recorded ladder** rather than guess or abstain, if a rung is
+reachable. The operator's budget decides how far to climb; the ladder just makes the climb
+possible without re-deciding it in the dark.
 
 ## 2. Harvest capability cards from ground truth
 
@@ -146,7 +157,11 @@ restore-then-deploy) need the full climb (prose runbooks, prelude steps, a stron
 rung-2/4). **Measure it in situ:** pose the project's own needs, answer them, check each
 against ground truth; where you fall short (no card, wrong-real pick, missing atoms), climb
 and re-pose. Done when the LOM reliably serves this project's needs — the LOM tuning itself
-against real ground truth, **not** a shipped grader or scored loop.
+against real ground truth, **not** a shipped grader or scored loop. **Enumerate the operator's
+real flows here** — the small, knowable set they'll actually need (deploy, restart-and-confirm,
+recover, onboard, rotate) — and for any that are multi-step, infer + ground + capture each as a
+distilled runbook now (rung 4), while the lights are on. The state space is small enough that
+capturing it at setup covers the common case; the rare uncaptured goal is inferred live at use.
 
 ## 3. Translate intent → a grounded command
 
@@ -157,9 +172,10 @@ mis-ranks (can't index short tokens like `up`, collides prefixes, lets generic w
 a wrong card). You always are the LOM at skill-run time — rank the cards directly on purpose
 *and* whether the command signature performs the operation, emit verbatim with runners-up.
 Rank over **both** kinds of corpus artifact: harvested single-command cards *and* the
-**distilled runbooks** the inner loop persisted (rung 4). A high-level goal that matches a
-distilled runbook returns that whole grounded process — re-verified against live source — so
-the operator (or a weaker offline LOM) gets the hard-won inference back without re-inferring;
+**distilled runbooks** setup captured for the operator's real flows (§2b / rung 4). A
+high-level goal that matches a distilled runbook returns that whole grounded process —
+re-verified against live source — so the operator (or a weaker offline LOM) gets the flow back
+without re-inferring; a goal no captured flow covers is inferred live and escalated (§1);
 a distilled runbook whose atoms no longer ground has rotted — re-infer and re-distill.
 
 **Abstain on judgment, not a cosine number.** If the top card doesn't actually do what's
@@ -240,20 +256,22 @@ ground truth. Climb only as far as needed; label every answer with its rung.
   - **Abstain on the whole goal** if no grounded process exists (a rollback with no documented
     procedure) rather than fabricate a plausible one.
   Show steps discretely, label less-trusted — verify the order.
-  - **Distill what you inferred (the inner loop — this is the point, not a nicety).** A rung-4
-    inference is expensive and you just did it; do not throw it away. Persist the verified process
-    into this project's `.arlo/` corpus as a **distilled runbook**: the goal in the operator's own
-    words, the ordered steps each with its source `file:line` and grounding, the `[conditional]`
-    preconditions, the flagged gaps, and the **effective-source reasoning** that decided it
-    (which source governs, which trap was avoided) — stamped with the date and the source
-    SHAs/mtimes it grounded against, labeled rung-4-inferred (composition less-trusted, atoms
-    grounded). The corpus then grows **through use**: the next run — a weaker LOM, the offline
-    CLI, or a local model seeded on the corpus — *retrieves* the distilled runbook (§3 ranks over
-    distilled runbooks as well as harvested cards) instead of paying to re-infer it. This is the
-    downstream distillation arlo exists for. It is **not frozen truth**: it is a dated snapshot
-    re-verified against live source on use — each atom re-groundable, the effective-source claim
-    re-checkable — the same anti-rot discipline as any card; if the source moved, re-infer and
-    re-distill.
+  - **Capture the flows at setup, don't distill open-endedly through use.** The flows an operator
+    actually needs on a project are a *small, enumerable set* — deploy, restart-and-confirm,
+    recover, onboard, rotate a key. So the place to spend a rung-4 inference is **setup**, over
+    that known flow list, not every use: at setup, enumerate the operator's real flows (§2b) and
+    infer + ground each once, persisting it into `.arlo/` as a **distilled runbook** — the goal in
+    the operator's words, the ordered steps each with source `file:line` + grounding, the
+    `[conditional]` preconditions, the flagged gaps, and the **effective-source reasoning** that
+    decided it — stamped with the date and the source SHAs/mtimes it grounded against, labeled
+    rung-4-inferred (composition less-trusted, atoms grounded). At use, the operator *retrieves*
+    the captured flow (§3 ranks over distilled runbooks as well as cards); a **rare goal the
+    captured flows don't cover is inferred live**, and escalated up the LOM ladder (§1) if the
+    default model can't. This bounds the work (a finite flow list at setup + a small live tail)
+    instead of growing a corpus through open-ended use. A distilled runbook is **not frozen
+    truth**: it is a dated snapshot re-verified against live source on use — each atom
+    re-groundable, the effective-source claim re-checkable — same anti-rot discipline as any card;
+    if the source moved, re-infer and re-capture.
 - **Rung 5 — propose** *(review-required)*: draft a card and call `ground.card_grounded(command,
   source)` — the skeleton must appear verbatim (it joins backslash-continued lines and collapses
   whitespace first). Label grounded-to-source, not-yet-ground-truth. Prefer the **effective**
