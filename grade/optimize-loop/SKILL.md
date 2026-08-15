@@ -5,6 +5,12 @@ description: "The outer loop, as a skill. Take a bundle (a skill/product), run i
 
 # Optimize a bundle: run it, score its run, iterate
 
+> **Ownership: this is a hoist(able) builder-layer skill — generic over any bundle; arlo is a
+> consumer, not the owner.** It is parked in the arlo repo because it was derived here; promote
+> it to hoistable when hoistable is next worked (do not reach into hoistable's repo to place it —
+> use hoistable's own skill). The self-referential "it too is a bundle" note at the bottom is the
+> hoistable-optimizes-itself recursion; acknowledge it, don't spin on it.
+
 This is the **outer loop** — the meta-skill that improves another skill (the *bundle*). The
 bundle is run in-situ, its run is scored against what actually matters, the loss is attributed
 to the bundle, and the bundle is patched. Repeat, climbing until the score plateaus at the
