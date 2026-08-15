@@ -183,6 +183,19 @@ asked, or you know the surface wasn't fully harvested, say "no confident match" 
 rung 5 rather than hand back a *wrong real* command with unearned confidence. Label it — the
 wrong-real is safe only because it's labeled.
 
+**Show the trap you avoided — don't just quietly route around it.** When an *obvious* command
+the operator (or a naive NL→shell model) would reach for is **not ground truth** — a plausible
+`kubectl set env …` that isn't in the real surface, a flag that doesn't exist, a hot-swap the
+system doesn't support — surface it explicitly as a **refused alternative** in the answer, not
+just in your own head: show the tempting command, marked `✕ not in your ground truth
+(card_grounded=False)`, with the one-line operational reason if you know it (it drifts from the
+provisioner, it bounces the pod), *then* give the grounded answer. This is the invariant made
+visible: arlo doesn't silently hand you the right command, it shows you the tempting wrong one
+it refused, so you learn the trap instead of hitting it. The refused command is only ever shown
+**labeled not-ground-truth**, never emitted as the answer — that is exactly why showing it is
+safe. Surface at most the one or two an operator would actually try; don't invent traps to
+look clever.
+
 ## 4. Slot-fill a real template (rung 1)
 
     python3 -m arlo.binder card.json "bounce the deriver"
