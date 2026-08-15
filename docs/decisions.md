@@ -147,6 +147,37 @@ this file is where continuity lives, not an issue tracker.)
   primitives only); the rung reasoning moved fully into SKILL.md § "Rungs 2-6". Every
   structural guarantee and every rung kept; ~730 → ~120 lines of shipped code.
 
+- **The harvest boundary is the project's OPERATIONAL REALITY, not its checkout — discover
+  dependencies, then recurse or capture (operator's call).** (2026-08-14, from a 5-project
+  strain study + controlled re-runs; SKILL.md commits `6c53fd2`..`f91f73d` on branch
+  `worktree-skill-harvest-lom-fixes`.) A project is operated through more than its own files:
+  the platform it runs on and the tools it habitually invokes are part of its ground truth.
+  arlo discovers these two ways — **declared** (docs say "runs on <platform> — see …") and
+  **ambient, from footprint** (a `.ready/` dotdir, a compose file, a `.envrc` — the tools it
+  carries but never names). For each, it reaches the dependency's own ground truth by **either
+  recurse** (re-harvest at use time; current, needs the dependency reachable) **or capture**
+  (snapshot into this project's `.arlo/` at setup; self-contained but dated) — the operator's
+  call, the same regenerate-vs-snapshot tradeoff arlo makes for cards, neither defaulted. This
+  is invariant #4 (resolve, don't hardcode) applied to the harvest *sources*. Restoration of a
+  cold/unauthed environment (auth/config/env, `az login`, the reach-the-cluster path) is a
+  first-class operational need under this — often the first need and the rung-4 prelude — and
+  its ground truth frequently lives in the platform, reached via the project's own pointer.
+
+- **Discovery is by EVIDENCE, not recall; the dir→binary hop is the fragile one (measured,
+  not asserted).** (2026-08-14, controlled clean-room test on `nostr-relay`: no CLAUDE.md,
+  skill de-leaked of any `.ready→rd` spoon-feed, agent forced to report its trail + declare
+  prior knowledge.) Result: identifying *what* a footprint tool is works from on-disk contents
+  alone (a `.ready/config.json` with a kind-30301 board coordinate ⇒ nostr-native board tool);
+  resolving the *runnable binary* is fragile because the dir name and CLI differ (`.ready/` is
+  driven by `rd`, not `ready`) and the state files rarely spell the CLI. It closes only when an
+  in-tree writer artifact names the binary; absent one, a naive LOM correctly identifies the
+  tool class and then **abstains** (invariant-safe, not full discovery). The mitigation is
+  **capture at setup** (record the `.<dir>/ → <binary>` mapping while known). Methodological
+  note that must not be lost: the LOM (and every subagent) already knowing the operator's
+  shared tools (`rd`/ready) is a **confound** — a production advantage but a measurement bug;
+  control for it by de-leaking the skill of tool names, testing on projects that don't declare
+  the tool, and auditing the agent's honest self-report of whether artifact-alone would suffice.
+
 ## Open (decide with evidence, do not guess)
 
 - **Wire the oracle-as-judge grading loop for rungs 1+.** The judge is decided (the harness
@@ -243,6 +274,15 @@ regardless of everything below. (b) rung-1 exact match (skeleton + bound slot) �
 binding a wrong card ≥ 90% of the time.
 
 ### STEP 3 is an optimization loop, not a one-shot grade (reframe 2026-08-14)
+
+> **The outer loop is hoist's, not arlo's (decided 2026-08-15).** "Run a bundle, score its run,
+> iterate" is a hoist(able) builder-layer skill (`core/optimize-loop/SKILL.md`, invoked as
+> `/hoistable:optimize`); arlo is a *consumer* — a bundle it optimizes. Do NOT fork it into this
+> repo: a copy was parked here while it was derived and has been deleted; use the invoke path.
+> The skill carries the hard-won trap list (verify-don't-fabricate, no-thumb-on-scale,
+> score-what-decides-success, improve-bundle-not-apparatus, inner-vs-outer-ring, single-sample
+> noise). Its companion is the *inner* loop now in `SKILL.md` rung 4: arlo distills each verified
+> inference into `.arlo/` through use, so the outer loop stays small.
 
 STEP 3 is a **test that produces a loss function, back-propagated through the two upstream
 artifacts — the hoist distribution (STEP 2) and the skill toolset (STEP 1) — to optimize

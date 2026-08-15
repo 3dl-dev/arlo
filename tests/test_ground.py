@@ -77,6 +77,21 @@ class Rung5Propose(unittest.TestCase):
         self.assertFalse(grounded)              # 'nuke' never appears
         self.assertTrue(missing)
 
+    def test_whitespace_run_in_source_does_not_false_refuse(self):
+        # a real command documented backslash-continued / column-aligned leaves a run of
+        # whitespace (space-before-backslash -> newline -> indent) between tokens; the raw
+        # substring check false-refused it. Normalization accepts the genuinely-present skeleton.
+        src = "az containerapp update -g prod \\\n    --image acr/app:v1"
+        grounded, missing = ground.card_grounded("az containerapp update -g prod --image <ref>", src)
+        self.assertTrue(grounded)
+        self.assertEqual(missing, [])
+
+    def test_normalization_does_not_fabricate_a_missing_token(self):
+        # invariant guard: collapsing whitespace must not let an absent token pass.
+        grounded, missing = ground.card_grounded("deploy.sh   frobnicate", SOURCE)
+        self.assertFalse(grounded)
+        self.assertTrue(missing)
+
 
 class Rung6Generate(unittest.TestCase):
     def test_generated_command_is_always_unverified(self):

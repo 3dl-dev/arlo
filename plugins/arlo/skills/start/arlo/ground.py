@@ -98,10 +98,19 @@ def card_grounded(command, source_text):
     """Every literal (non-slot) segment of a proposed command must appear in the source
     the model read; slot placeholders may be inferred. Reuses binder.literals so
     'grounded' at rung 5 means exactly what 'skeleton' means at rung 1. Returns
-    (grounded, missing_segments)."""
-    src = source_text or ""
+    (grounded, missing_segments).
+
+    Whitespace is normalized on BOTH sides before the check: a real command whose source
+    documents it backslash-continued, column-aligned, or with any run of spaces/newlines
+    would otherwise be falsely refused (a fence writing `name \` with a space before the
+    backslash leaves a double space the raw substring check misses). Collapsing runs to one
+    space is invariant-safe — it can only accept a genuinely-present skeleton, never fabricate
+    adjacency the source lacks."""
+    def _norm(s):
+        return " ".join(re.sub(r"\\\s*\n", " ", s).split())  # join \-continued lines, collapse runs
+    src = _norm(source_text or "")
     missing = [seg.strip() for seg in literals(command)
-               if seg.strip() and seg.strip() not in src]
+               if _norm(seg) and _norm(seg) not in src]
     return (not missing, missing)
 
 

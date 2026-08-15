@@ -1,108 +1,77 @@
-<title>arlo lights-out</title>
+<title>arlo</title>
 <style>
   :root{
-    --void:#0d0a07; --void-2:#120d08;
-    --panel:#151009; --panel-edge:#2c2012; --panel-top:#1d150c;
-    --amber:#ffb454; --amber-bright:#ffcf8a; --amber-dim:#a9772f;
-    --cream:#f3e9d8; --muted:#7a6647;
-    --grounded:#86b562; --decline:#c8703f;
+    --page:#0b0a08;
+    --card:#12100c; --card-edge:#241f16;
+    --panel:#0e0c09; --panel-edge:#231d13; --panel-top:#151107;
+    --amber:#f2b45c; --amber-bright:#ffd591; --amber-dim:#a9793a;
+    --cream:#f1ece2; --muted:#8a7f6b; --faint:#9c9280;
+    --refuse:#e0785a; --ok:#7bc98a; --warn:#e0a56a;
     --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --grotesque: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--void);min-height:100%}
+  html,body{background:var(--page);min-height:100%}
   body{display:grid;place-items:center;padding:24px;font-family:var(--mono)}
 
   .stage{width:100%;max-width:1200px}
   .poster{
     container-type:inline-size;
     position:relative; width:100%; aspect-ratio:1200/630; overflow:hidden;
-    border-radius:14px;
-    background:
-      radial-gradient(120% 140% at 82% 42%, rgba(255,180,84,.16), rgba(255,150,60,.05) 32%, transparent 58%),
-      linear-gradient(150deg,var(--void) 0%,var(--void-2) 62%,#0a0705 100%);
-    border:1px solid #241a0e;
-    box-shadow:0 30px 90px rgba(0,0,0,.55);
-    isolation:isolate;
+    border-radius:12px; background:var(--card); border:1px solid var(--card-edge);
   }
-  /* faint scanlines across the whole scene, like a room lit by one screen */
-  .poster::after{
-    content:""; position:absolute; inset:0; z-index:5; pointer-events:none;
-    background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.16) 2px 3px);
-    mix-blend-mode:overlay; opacity:.5;
+  .poster::before{
+    content:""; position:absolute; left:-6%; top:6%; width:46%; height:74%;
+    background:radial-gradient(closest-side, rgba(242,180,92,.10), transparent 70%);
+    pointer-events:none;
   }
+  .grid{position:absolute; inset:0; display:grid; grid-template-columns:35% 65%}
 
-  .grid{position:absolute; inset:0; display:grid; grid-template-columns:41% 59%; z-index:2}
-
-  /* ---- left: identity ---- */
-  .left{padding:7.5cqw 0 6cqw 6.5cqw; display:flex; flex-direction:column; height:100%}
-  .eyebrow{
-    font-size:1.15cqw; letter-spacing:.42em; text-transform:uppercase;
-    color:var(--amber-dim); font-weight:600;
-  }
-  .wordmark{
-    font-family:var(--grotesque); font-weight:800; letter-spacing:-.03em;
-    font-size:12.5cqw; line-height:.9; color:var(--amber);
-    margin-top:2.4cqw;
-    text-shadow:0 0 26px rgba(255,180,84,.45), 0 0 3px rgba(255,207,138,.6);
-  }
-  .expand{
-    font-size:1.7cqw; letter-spacing:.02em; color:var(--cream); margin-top:1.7cqw;
-    font-weight:500;
-  }
-  .kicker{
-    margin-top:auto; max-width:30cqw;
-    font-size:2.15cqw; line-height:1.32; color:#d8c7ab; font-weight:500;
-    font-family:var(--grotesque); letter-spacing:-.01em;
-  }
-  .kicker b{color:var(--amber-bright); font-weight:700}
-  .foot{
-    display:flex; align-items:center; gap:1.4cqw; margin-top:2.6cqw;
-    font-size:1.25cqw; color:var(--muted);
-  }
+  .left{padding:0 2cqw 0 5.8cqw; display:flex; flex-direction:column; justify-content:center; height:100%}
+  .eyebrow{font-size:1.08cqw; letter-spacing:.34em; text-transform:uppercase; color:var(--amber-dim); font-weight:600; white-space:nowrap}
+  .wordmark{font-family:var(--grotesque); font-weight:800; letter-spacing:-.04em; font-size:5.8cqw; line-height:.9; color:var(--amber); margin-top:1.6cqw}
+  .expand{font-size:1.44cqw; color:var(--cream); margin-top:1.4cqw; font-weight:500; max-width:26cqw; line-height:1.34}
+  .kicker{font-size:1.26cqw; line-height:1.44; color:#e2d7c4; font-weight:500; font-family:var(--grotesque); letter-spacing:-.01em; max-width:27cqw; margin-top:1.4cqw}
+  .kicker b{color:var(--amber); font-weight:700}
+  .install{font-family:var(--mono); margin-top:1.5cqw; background:var(--panel); border:1px solid var(--panel-edge); border-radius:6px; padding:.9cqw 1.1cqw; font-size:1.08cqw; line-height:1.85; color:var(--cream); max-width:27cqw}
+  .install .c{color:var(--amber); font-weight:600}
+  .foot{display:flex; align-items:center; gap:1.1cqw; margin-top:1.4cqw; font-size:1.05cqw; color:var(--muted)}
   .foot .repo{color:var(--amber-dim)}
   .foot .dot{width:.5cqw;height:.5cqw;border-radius:50%;background:var(--muted)}
 
-  /* ---- right: the terminal, the one light on ---- */
-  .right{display:grid; place-items:center; padding:5.5cqw 6cqw 5.5cqw 1cqw}
-  .term{
-    width:100%; border-radius:10px; overflow:hidden;
-    background:linear-gradient(180deg,var(--panel) 0%,#110c07 100%);
-    border:1px solid var(--panel-edge);
-    box-shadow:0 0 0 1px rgba(255,180,84,.06), 0 22px 60px rgba(0,0,0,.6),
-               0 0 60px rgba(255,170,70,.10);
-  }
-  .bar{
-    display:flex; align-items:center; gap:.9cqw;
-    padding:1.15cqw 1.5cqw; background:var(--panel-top);
-    border-bottom:1px solid var(--panel-edge);
-  }
-  .led{width:.85cqw;height:.85cqw;border-radius:50%;background:#3a2b18}
-  .led.on{background:var(--amber);box-shadow:0 0 8px rgba(255,180,84,.8)}
-  .bar .who{margin-left:.6cqw;font-size:1.2cqw;color:var(--amber-dim);letter-spacing:.02em}
-  .bar .stat{margin-left:auto;font-size:1.1cqw;color:#6f5a3c}
+  .right{display:grid; place-items:center; padding:2.4cqw 4.4cqw 2.4cqw 1cqw}
+  .term{width:100%; border-radius:9px; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge)}
+  .bar{display:flex; align-items:center; gap:.9cqw; padding:.9cqw 1.5cqw; background:var(--panel-top); border-bottom:1px solid var(--panel-edge)}
+  .led{width:.78cqw;height:.78cqw;border-radius:50%;background:#3a3020}
+  .led.on{background:var(--amber-dim)}
+  .bar .who{margin-left:.6cqw;font-size:1.02cqw;color:var(--amber-dim);letter-spacing:.02em}
+  .bar .stat{margin-left:auto;font-size:.95cqw;color:#6b6152}
 
-  .body{padding:2cqw 2.1cqw 2.3cqw; font-size:1.72cqw; line-height:1.75}
-  .sys{color:#6f5a3c}
-  .sys .down{color:var(--decline)}
-  .row{margin-top:1.35cqw}
-  .tag{
-    display:inline-block; width:5.2cqw; padding-right:1.6cqw; color:var(--amber-dim);
-    text-transform:lowercase; letter-spacing:.04em;
-  }
-  .tag.you{color:#b89a6f}
-  .you-in{color:var(--cream)}
-  .cmd{color:var(--amber);text-shadow:0 0 16px rgba(255,180,84,.35)}
-  .meta{color:var(--grounded); font-size:1.28cqw; letter-spacing:.02em}
-  .meta .conf{color:var(--amber-dim); font-variant-numeric:tabular-nums}
-  .refuse{color:var(--decline)}
-  .cur{
-    display:inline-block;width:1.05cqw;height:1.8cqw;vertical-align:-.25cqw;
-    background:var(--amber);margin-left:.3cqw;box-shadow:0 0 10px rgba(255,180,84,.7);
-    animation:blink 1.05s steps(1) infinite;
-  }
+  .body{padding:1.5cqw 1.8cqw 1.6cqw; font-size:1.16cqw; line-height:1.4; min-height:34cqw}
+  .ln{opacity:0}
+  .ln.show{opacity:1}
+  .prompt{color:var(--amber-dim); margin-right:.55cqw}
+  .prog{color:var(--amber); font-weight:600}
+  .goal{color:var(--cream)}
+
+  .rHead{color:var(--refuse); font-weight:700; margin-top:1.15cqw; letter-spacing:.02em}
+  .rHead .tag{color:#a9705c; font-weight:400; font-style:italic; margin-left:.5cqw; font-size:1.02cqw}
+  .rCmd{color:#b58c7c; margin-top:.28cqw; padding-left:1.4cqw; text-decoration:line-through; text-decoration-color:#5a3a30}
+  .why{color:#9c8878; margin-top:.28cqw; padding-left:1.4cqw; font-size:1.04cqw; line-height:1.36; max-width:52cqw}
+
+  .gHead{color:var(--ok); font-weight:700; margin-top:1.35cqw; letter-spacing:.02em}
+  .gHead .tag{color:#5f8a6a; font-weight:400; font-style:italic; margin-left:.5cqw; font-size:1.02cqw}
+  .gCmd{color:var(--amber-bright); font-weight:600; margin-top:.3cqw; padding-left:1.4cqw}
+  .gCmd .a{color:var(--cream); font-weight:400}
+  .src{color:#6f6656; margin-top:.24cqw; padding-left:1.4cqw; font-size:1.02cqw}
+
+  .trap{color:#dcd2c2; margin-top:1.2cqw; font-size:1.1cqw; line-height:1.4; border-left:.22cqw solid var(--warn); padding-left:.95cqw; max-width:53cqw}
+  .trap b{color:var(--warn); font-weight:600}
+  .cur{display:inline-block;width:.72cqw;height:1.3cqw;vertical-align:-.2cqw;background:var(--amber);margin-left:.15cqw}
+  .cur.blink{animation:blink 1.05s steps(1) infinite}
   @keyframes blink{50%{opacity:0}}
-  @media (prefers-reduced-motion:reduce){.cur{animation:none}}
+
+  @media (prefers-reduced-motion:reduce){ .ln{opacity:1} .cur{display:none} }
 </style>
 
 <div class="stage">
@@ -111,9 +80,13 @@
       <div class="left">
         <div class="eyebrow">A Real, Local Operator</div>
         <div class="wordmark">arlo</div>
-        <div class="expand">Lights-out ops for AI-managed apps.</div>
-
-        <div class="kicker">When your coding agent taps out, you can still run your own system — <b>it hands you the real command, and never invents one.</b></div>
+        <div class="expand">Lights-Out operations for AI managed apps.</div>
+        <div class="kicker">Session limits and API outages happen. Be prepared! Install the skill to setup Arlo on your projects today. It reads your code, docs, and infra to guide you through diagnostics, restarts, and restores when frontier AI goes down.</div>
+        <div class="install">
+          <div><span class="c">/plugin marketplace add</span> 3dl-dev/arlo</div>
+          <div><span class="c">/plugin install</span> arlo@arlo</div>
+          <div><span class="c">/arlo:start</span></div>
+        </div>
         <div class="foot">
           <span class="repo">github.com/3dl-dev/arlo</span>
           <span class="dot"></span>
@@ -125,21 +98,68 @@
         <div class="term">
           <div class="bar">
             <span class="led"></span><span class="led"></span><span class="led on"></span>
-            <span class="who">arlo — on shift</span>
-            <span class="stat">frontier: unreachable</span>
+            <span class="who">arlo · lights out</span>
+            <span class="stat">~/enterprise-ai</span>
           </div>
-          <div class="body">
-            <div class="sys">// your coding agent is <span class="down">rate-limited</span>. the app is down. it's 3am.</div>
+          <div class="body" id="body">
+            <div class="ln" id="l1"><span class="prompt">$</span><span class="prog">arlo</span> <span class="goal" id="goal"></span><span class="cur" id="c1"></span></div>
 
-            <div class="row"><span class="tag you">you</span><span class="you-in">restart the deriver</span></div>
-            <div class="row"><span class="tag">arlo</span><span class="cmd">docker compose restart deriver</span></div>
-            <div class="row"><span class="tag"></span><span class="meta">grounded ✓ · from ops/compose.yml · <span class="conf">conf 0.94</span></span></div>
+            <div class="ln" id="l2"><span class="rHead">✕ REFUSED<span class="tag">not in your ground truth · card_grounded=False</span></span></div>
+            <div class="ln" id="l3"><span class="rCmd">kubectl -n enterprise-ai set env deployment/agent-baron-hermes OPENCODE_MODEL=enterprise-ai/&lt;model&gt;</span></div>
+            <div class="ln" id="l4"><span class="why">no such command here; it drifts the pod from the provisioner (the next re-apply overwrites it) and skips the gateway catalogue check — a bad model name then 4xx's silently.</span></div>
 
-            <div class="row" style="margin-top:1.9cqw"><span class="tag you">you</span><span class="you-in">roll back last night's migration</span></div>
-            <div class="row"><span class="tag">arlo</span><span class="refuse">no confident match — i won't guess.</span><span class="cur"></span></div>
+            <div class="ln" id="l5"><span class="gHead">✓ GROUNDED<span class="tag">re-run with --model · rung 1</span></span></div>
+            <div class="ln" id="l6"><span class="gCmd">deploy/bin/hermes-up.sh baron hermes --model <span class="a">&lt;model&gt;</span></span><span class="cur" id="c6"></span></div>
+            <div class="ln" id="l7"><span class="src">hermes-up.sh:87,197 · effective source: OPENCODE_MODEL env · 64-agent.template.yaml:233</span></div>
+
+            <div class="ln" id="l8"><span class="trap"><b>heads-up</b> — this rolls the pod and ends the resident session; no hot model-swap exists. hermes-up re-validates the new model through the gateway.</span></div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var $=function(id){return document.getElementById(id);};
+  var ids=['l1','l2','l3','l4','l5','l6','l7','l8'];
+  function type(elId,curId,text,cps,done){
+    var el=$(elId),i=0,base=1000/cps;
+    (function tick(){
+      if(i<=text.length){ el.textContent=text.slice(0,i); i++; setTimeout(tick, base*(0.6+Math.random()*0.9)); }
+      else if(done){ done(); }
+    })();
+  }
+  if(reduce){
+    ids.forEach(function(id){$(id).classList.add('show');});
+    $('goal').textContent='switch hermes to a different model';
+    $('c1').style.display='none'; $('c6').className='cur blink';
+    return;
+  }
+  function reset(){
+    ids.forEach(function(id){$(id).classList.remove('show');});
+    $('goal').textContent=''; $('c1').style.display=''; $('c1').className='cur';
+    $('c6').style.display='none'; $('c6').className='cur';
+  }
+  function run(){
+    reset();
+    var T=[],at=0; function step(g,fn){at+=g;T.push([at,fn]);}
+    step(500, function(){ $('l1').classList.add('show'); type('goal','c1','switch hermes to a different model',20,function(){$('c1').className='cur blink';}); });
+    // the refused alternative — the trap arlo won't hand you
+    step(2600, function(){ $('c1').className='cur'; $('l2').classList.add('show'); });
+    step(600,  function(){ $('l3').classList.add('show'); });
+    step(750,  function(){ $('l4').classList.add('show'); });
+    // let the refusal + reason land
+    step(3400, function(){ $('l5').classList.add('show'); });
+    step(650,  function(){ $('l6').classList.add('show'); $('c1').style.display='none'; $('c6').style.display=''; $('c6').className='cur blink'; });
+    // the grounded command is static (has a styled slot), just reveal + source
+    step(1200, function(){ $('l7').classList.add('show'); });
+    step(1900, function(){ $('l8').classList.add('show'); });
+    step(6500, function(){ run(); });
+    T.forEach(function(s){ setTimeout(s[1], s[0]); });
+  }
+  run();
+})();
+</script>
