@@ -76,10 +76,10 @@
   <div class="poster">
     <div class="grid">
       <div class="left">
-        <div class="eyebrow">Lights-out ops</div>
+        <div class="eyebrow">A Real, Local Operator</div>
         <div class="wordmark">arlo</div>
-        <div class="expand">The obvious command is often the wrong one. arlo shows you the trap it refused.</div>
-        <div class="kicker">Type your words; get the real command from your system's own ground truth — and the tempting one it <b>won't</b> hand you, with why.</div>
+        <div class="expand">Lights-out operations for AI-managed apps.</div>
+        <div class="kicker">Session limits and API outages happen. Install it in your agent <b>before</b> the disaster — it learns your code, docs, and infra, then walks you through diagnostics, restarts, and restores when the frontier's down.</div>
         <div class="foot">
           <span class="repo">github.com/3dl-dev/arlo</span>
           <span class="dot"></span>
@@ -98,7 +98,7 @@
             <div class="ln" id="l1"><span class="prompt">$</span><span class="prog">arlo</span> <span class="goal" id="goal"></span><span class="cur" id="c1"></span></div>
 
             <div class="ln" id="l2"><span class="rHead">✕ REFUSED<span class="tag">not in your ground truth · card_grounded=False</span></span></div>
-            <div class="ln" id="l3"><span class="rCmd">kubectl set env deploy/agent-baron-hermes OPENCODE_MODEL=enterprise-ai/&lt;model&gt;</span></div>
+            <div class="ln" id="l3"><span class="rCmd">kubectl -n enterprise-ai set env deployment/agent-baron-hermes OPENCODE_MODEL=enterprise-ai/&lt;model&gt;</span></div>
             <div class="ln" id="l4"><span class="why">no such command here; it drifts the pod from the provisioner (the next re-apply overwrites it) and skips the gateway catalogue check — a bad model name then 4xx's silently.</span></div>
 
             <div class="ln" id="l5"><span class="gHead">✓ GROUNDED<span class="tag">re-run with --model · rung 1</span></span></div>
