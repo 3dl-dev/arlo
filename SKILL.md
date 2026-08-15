@@ -156,6 +156,11 @@ path*: it needs a provisioned embedder (else `ModuleNotFoundError`) and its mode
 mis-ranks (can't index short tokens like `up`, collides prefixes, lets generic words clear on
 a wrong card). You always are the LOM at skill-run time — rank the cards directly on purpose
 *and* whether the command signature performs the operation, emit verbatim with runners-up.
+Rank over **both** kinds of corpus artifact: harvested single-command cards *and* the
+**distilled runbooks** the inner loop persisted (rung 4). A high-level goal that matches a
+distilled runbook returns that whole grounded process — re-verified against live source — so
+the operator (or a weaker offline LOM) gets the hard-won inference back without re-inferring;
+a distilled runbook whose atoms no longer ground has rotted — re-infer and re-distill.
 
 **Abstain on judgment, not a cosine number.** If the top card doesn't actually do what's
 asked, or you know the surface wasn't fully harvested, say "no confident match" and climb to
@@ -235,6 +240,20 @@ ground truth. Climb only as far as needed; label every answer with its rung.
   - **Abstain on the whole goal** if no grounded process exists (a rollback with no documented
     procedure) rather than fabricate a plausible one.
   Show steps discretely, label less-trusted — verify the order.
+  - **Distill what you inferred (the inner loop — this is the point, not a nicety).** A rung-4
+    inference is expensive and you just did it; do not throw it away. Persist the verified process
+    into this project's `.arlo/` corpus as a **distilled runbook**: the goal in the operator's own
+    words, the ordered steps each with its source `file:line` and grounding, the `[conditional]`
+    preconditions, the flagged gaps, and the **effective-source reasoning** that decided it
+    (which source governs, which trap was avoided) — stamped with the date and the source
+    SHAs/mtimes it grounded against, labeled rung-4-inferred (composition less-trusted, atoms
+    grounded). The corpus then grows **through use**: the next run — a weaker LOM, the offline
+    CLI, or a local model seeded on the corpus — *retrieves* the distilled runbook (§3 ranks over
+    distilled runbooks as well as harvested cards) instead of paying to re-infer it. This is the
+    downstream distillation arlo exists for. It is **not frozen truth**: it is a dated snapshot
+    re-verified against live source on use — each atom re-groundable, the effective-source claim
+    re-checkable — the same anti-rot discipline as any card; if the source moved, re-infer and
+    re-distill.
 - **Rung 5 — propose** *(review-required)*: draft a card and call `ground.card_grounded(command,
   source)` — the skeleton must appear verbatim (it joins backslash-continued lines and collapses
   whitespace first). Label grounded-to-source, not-yet-ground-truth. Prefer the **effective**
