@@ -1,119 +1,92 @@
-<title>arlo lights-out</title>
+<title>arlo</title>
 <style>
   :root{
-    --void:#0d0a07; --void-2:#120d08;
-    --panel:#151009; --panel-edge:#2c2012; --panel-top:#1d150c;
-    --amber:#ffb454; --amber-bright:#ffcf8a; --amber-dim:#a9772f;
-    --cream:#f3e9d8; --muted:#7a6647;
-    --grounded:#86b562; --decline:#c8703f;
+    --page:#0b0a08;
+    --card:#12100c; --card-edge:#241f16;
+    --panel:#100e0a; --panel-edge:#231d13; --panel-top:#151107;
+    --amber:#f2b45c; --amber-bright:#ffd591; --amber-dim:#a9793a;
+    --cream:#f1ece2; --muted:#8a7f6b; --faint:#9c9280; --warn:#e0a56a;
     --mono: ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
     --grotesque: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--void);min-height:100%}
+  html,body{background:var(--page);min-height:100%}
   body{display:grid;place-items:center;padding:24px;font-family:var(--mono)}
 
   .stage{width:100%;max-width:1200px}
   .poster{
     container-type:inline-size;
     position:relative; width:100%; aspect-ratio:1200/630; overflow:hidden;
-    border-radius:14px;
-    background:
-      radial-gradient(120% 140% at 82% 42%, rgba(255,180,84,.16), rgba(255,150,60,.05) 32%, transparent 58%),
-      linear-gradient(150deg,var(--void) 0%,var(--void-2) 62%,#0a0705 100%);
-    border:1px solid #241a0e;
-    box-shadow:0 30px 90px rgba(0,0,0,.55);
-    isolation:isolate;
+    border-radius:12px; background:var(--card); border:1px solid var(--card-edge);
   }
-  /* faint scanlines across the whole scene, like a room lit by one screen */
-  .poster::after{
-    content:""; position:absolute; inset:0; z-index:5; pointer-events:none;
-    background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.16) 2px 3px);
-    mix-blend-mode:overlay; opacity:.5;
+  .poster::before{
+    content:""; position:absolute; left:-6%; top:6%; width:46%; height:74%;
+    background:radial-gradient(closest-side, rgba(242,180,92,.10), transparent 70%);
+    pointer-events:none;
   }
+  .grid{position:absolute; inset:0; display:grid; grid-template-columns:37% 63%}
 
-  .grid{position:absolute; inset:0; display:grid; grid-template-columns:41% 59%; z-index:2}
-
-  /* ---- left: identity ---- */
-  .left{padding:7.5cqw 0 6cqw 6.5cqw; display:flex; flex-direction:column; height:100%}
-  .eyebrow{
-    font-size:1.15cqw; letter-spacing:.42em; text-transform:uppercase;
-    color:var(--amber-dim); font-weight:600;
-  }
-  .wordmark{
-    font-family:var(--grotesque); font-weight:800; letter-spacing:-.03em;
-    font-size:12.5cqw; line-height:.9; color:var(--amber);
-    margin-top:2.4cqw;
-    text-shadow:0 0 26px rgba(255,180,84,.45), 0 0 3px rgba(255,207,138,.6);
-  }
-  .expand{
-    font-size:1.7cqw; letter-spacing:.02em; color:var(--cream); margin-top:1.7cqw;
-    font-weight:500;
-  }
-  .kicker{
-    margin-top:auto; max-width:30cqw;
-    font-size:2.15cqw; line-height:1.32; color:#d8c7ab; font-weight:500;
-    font-family:var(--grotesque); letter-spacing:-.01em;
-  }
-  .kicker b{color:var(--amber-bright); font-weight:700}
-  .foot{
-    display:flex; align-items:center; gap:1.4cqw; margin-top:2.6cqw;
-    font-size:1.25cqw; color:var(--muted);
-  }
+  .left{padding:0 2.4cqw 0 6.2cqw; display:flex; flex-direction:column; justify-content:center; height:100%}
+  .eyebrow{font-size:1.12cqw; letter-spacing:.34em; text-transform:uppercase; color:var(--amber-dim); font-weight:600; white-space:nowrap}
+  .wordmark{font-family:var(--grotesque); font-weight:800; letter-spacing:-.04em; font-size:6cqw; line-height:.9; color:var(--amber); margin-top:1.7cqw}
+  .expand{font-size:1.5cqw; color:var(--cream); margin-top:1.5cqw; font-weight:500; max-width:29cqw; line-height:1.34}
+  .kicker{font-size:1.5cqw; line-height:1.42; color:#e2d7c4; font-weight:500; font-family:var(--grotesque); letter-spacing:-.01em; max-width:29cqw; margin-top:1.9cqw}
+  .kicker b{color:var(--amber); font-weight:700}
+  .kicker i{color:var(--amber-bright); font-style:normal}
+  .foot{display:flex; align-items:center; gap:1.2cqw; margin-top:2.1cqw; font-size:1.12cqw; color:var(--muted)}
   .foot .repo{color:var(--amber-dim)}
   .foot .dot{width:.5cqw;height:.5cqw;border-radius:50%;background:var(--muted)}
 
-  /* ---- right: the terminal, the one light on ---- */
-  .right{display:grid; place-items:center; padding:5.5cqw 6cqw 5.5cqw 1cqw}
-  .term{
-    width:100%; border-radius:10px; overflow:hidden;
-    background:linear-gradient(180deg,var(--panel) 0%,#110c07 100%);
-    border:1px solid var(--panel-edge);
-    box-shadow:0 0 0 1px rgba(255,180,84,.06), 0 22px 60px rgba(0,0,0,.6),
-               0 0 60px rgba(255,170,70,.10);
-  }
-  .bar{
-    display:flex; align-items:center; gap:.9cqw;
-    padding:1.15cqw 1.5cqw; background:var(--panel-top);
-    border-bottom:1px solid var(--panel-edge);
-  }
-  .led{width:.85cqw;height:.85cqw;border-radius:50%;background:#3a2b18}
-  .led.on{background:var(--amber);box-shadow:0 0 8px rgba(255,180,84,.8)}
-  .bar .who{margin-left:.6cqw;font-size:1.2cqw;color:var(--amber-dim);letter-spacing:.02em}
-  .bar .stat{margin-left:auto;font-size:1.1cqw;color:#6f5a3c}
+  .right{display:grid; place-items:center; padding:3cqw 5cqw 3cqw 1cqw}
+  .term{width:100%; border-radius:9px; overflow:hidden; background:var(--panel); border:1px solid var(--panel-edge)}
+  .bar{display:flex; align-items:center; gap:.9cqw; padding:.95cqw 1.5cqw; background:var(--panel-top); border-bottom:1px solid var(--panel-edge)}
+  .led{width:.8cqw;height:.8cqw;border-radius:50%;background:#3a3020}
+  .led.on{background:var(--amber-dim)}
+  .bar .who{margin-left:.6cqw;font-size:1.05cqw;color:var(--amber-dim);letter-spacing:.02em}
+  .bar .stat{margin-left:auto;font-size:.98cqw;color:#6b6152}
 
-  .body{padding:2cqw 2.1cqw 2.3cqw; font-size:1.72cqw; line-height:1.75}
-  .sys{color:#6f5a3c}
-  .sys .down{color:var(--decline)}
-  .row{margin-top:1.35cqw}
-  .tag{
-    display:inline-block; width:5.2cqw; padding-right:1.6cqw; color:var(--amber-dim);
-    text-transform:lowercase; letter-spacing:.04em;
-  }
-  .tag.you{color:#b89a6f}
-  .you-in{color:var(--cream)}
-  .cmd{color:var(--amber);text-shadow:0 0 16px rgba(255,180,84,.35)}
-  .meta{color:var(--grounded); font-size:1.28cqw; letter-spacing:.02em}
-  .meta .conf{color:var(--amber-dim); font-variant-numeric:tabular-nums}
-  .refuse{color:var(--decline)}
-  .cur{
-    display:inline-block;width:1.05cqw;height:1.8cqw;vertical-align:-.25cqw;
-    background:var(--amber);margin-left:.3cqw;box-shadow:0 0 10px rgba(255,180,84,.7);
-    animation:blink 1.05s steps(1) infinite;
-  }
+  .body{padding:1.35cqw 1.7cqw 1.4cqw; font-size:1.08cqw; line-height:1.3}
+  .row{animation:rise .4s both}
+  @keyframes rise{from{opacity:0;transform:translateY(.4cqw)}to{opacity:1;transform:none}}
+  .cmd{color:var(--cream); margin-bottom:.5cqw}
+  .cmd .pr{color:var(--amber-dim); margin-right:.5cqw}
+  .cmd .prog{color:var(--amber); font-weight:600}
+  .rung{color:var(--faint); font-size:.98cqw; margin-bottom:.55cqw}
+  .step{display:flex; align-items:baseline; gap:.7cqw; margin-top:.36cqw}
+  .step .c{color:var(--amber-bright); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .step .c .a{color:var(--cream); font-weight:400}
+  .step.cond .c{color:var(--faint); font-weight:400}
+  .step .tag{color:var(--amber-dim); font-style:italic; flex:none; font-size:.96cqw}
+  .step .flag{color:var(--warn); flex:none; font-size:.94cqw}
+  .step .src{margin-left:auto; color:#6f6656; flex:none; font-size:.95cqw}
+  .insight{margin-top:1cqw; padding:.85cqw 1cqw; border-left:.25cqw solid var(--amber); background:rgba(242,180,92,.06); border-radius:0 4px 4px 0}
+  .insight .h{color:var(--amber); font-weight:600; font-size:.98cqw; letter-spacing:.03em}
+  .insight p{color:#dcd2c2; font-size:1.05cqw; line-height:1.36; margin-top:.3cqw}
+  .insight b{color:var(--amber-bright); font-weight:600}
+  .insight code{color:var(--amber-bright)}
+  .cur{display:inline-block;width:.8cqw;height:1.4cqw;vertical-align:-.2cqw;background:var(--amber);margin-left:.35cqw;animation:blink 1.05s steps(1) infinite}
   @keyframes blink{50%{opacity:0}}
-  @media (prefers-reduced-motion:reduce){.cur{animation:none}}
+
+  .row:nth-child(1){animation-delay:.05s}
+  .row:nth-child(2){animation-delay:.35s}
+  .row:nth-child(3){animation-delay:.55s}
+  .row:nth-child(4){animation-delay:.75s}
+  .row:nth-child(5){animation-delay:.95s}
+  .row:nth-child(6){animation-delay:1.15s}
+  .row:nth-child(7){animation-delay:1.35s}
+  .row:nth-child(8){animation-delay:1.55s}
+  .row:nth-child(9){animation-delay:1.9s}
+  @media (prefers-reduced-motion:reduce){.row{animation:none}.cur{animation:none}}
 </style>
 
 <div class="stage">
   <div class="poster">
     <div class="grid">
       <div class="left">
-        <div class="eyebrow">A Real, Local Operator</div>
+        <div class="eyebrow">Lights-out ops</div>
         <div class="wordmark">arlo</div>
-        <div class="expand">Lights-out ops for AI-managed apps.</div>
-
-        <div class="kicker">When your coding agent taps out, you can still run your own system — <b>it hands you the real command, and never invents one.</b></div>
+        <div class="expand">Say the goal. Get the real steps — and the trap the docs would walk you into.</div>
+        <div class="kicker">arlo works the flow out of your own ground truth, grounds every step, and catches what the docs get wrong — like a config the running service doesn't actually read. <b>It never invents a command.</b></div>
         <div class="foot">
           <span class="repo">github.com/3dl-dev/arlo</span>
           <span class="dot"></span>
@@ -125,18 +98,25 @@
         <div class="term">
           <div class="bar">
             <span class="led"></span><span class="led"></span><span class="led on"></span>
-            <span class="who">arlo — on shift</span>
-            <span class="stat">frontier: unreachable</span>
+            <span class="who">arlo · lights out</span>
+            <span class="stat">~/mainframe</span>
           </div>
           <div class="body">
-            <div class="sys">// your coding agent is <span class="down">rate-limited</span>. the app is down. it's 3am.</div>
+            <!-- verbatim, current-skill run; every command re-verified with card_grounded -->
+            <div class="row cmd"><span class="pr">$</span><span class="prog">arlo</span> make a newly-pulled model usable by Forge consumers</div>
+            <div class="row rung">rung 4 — composed from your ground truth, less-trusted; verify the order</div>
 
-            <div class="row"><span class="tag you">you</span><span class="you-in">restart the deriver</span></div>
-            <div class="row"><span class="tag">arlo</span><span class="cmd">docker compose restart deriver</span></div>
-            <div class="row"><span class="tag"></span><span class="meta">grounded ✓ · from ops/compose.yml · <span class="conf">conf 0.94</span></span></div>
+            <div class="row step cond"><span class="c">mainframe inference</span><span class="tag">if not already serving</span><span class="src">HANDOFF:86</span></div>
+            <div class="row step cond"><span class="c">curl …:11434/api/pull <span class="a">'{"name":"&lt;model&gt;"}'</span></span><span class="tag">if not pulled</span><span class="src">podman-stack:118</span></div>
+            <div class="row step"><span class="c">edit litellm_config.yaml <span class="a">— add the model_list entry</span></span><span class="src">HANDOFF:84</span></div>
+            <div class="row step"><span class="c">cp litellm_config.yaml /data/models/litellm-config.yaml</span><span class="src">HANDOFF:93</span></div>
+            <div class="row step"><span class="c">systemctl restart inference-litellm.service</span><span class="flag">⚑ flagged</span><span class="src">vendor:172</span></div>
+            <div class="row step"><span class="c">./scripts/e2e-test.sh <span class="a">— verify Forge sees it</span></span><span class="src">HANDOFF:95</span></div>
 
-            <div class="row" style="margin-top:1.9cqw"><span class="tag you">you</span><span class="you-in">roll back last night's migration</span></div>
-            <div class="row"><span class="tag">arlo</span><span class="refuse">no confident match — i won't guess.</span><span class="cur"></span></div>
+            <div class="row insight">
+              <div class="h">▲ THE CATCH</div>
+              <p>The served LiteLLM (gateway → <code>inference-a:8000</code>) reads <b>/data/models/litellm-config.yaml</b> — <b>not</b> the <code>litellm_config.yaml</code> the docs tell you to edit. Editing the repo file is a <b>silent no-op</b> until you <code>cp</code> it across.<span class="cur"></span></p>
+            </div>
           </div>
         </div>
       </div>
