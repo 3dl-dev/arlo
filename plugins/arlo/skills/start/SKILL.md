@@ -200,9 +200,21 @@ ground truth. Climb only as far as needed; label every answer with its rung.
     service is as stale as a moved-path doc. And when the effective source is populated from
     another file (a repo config copied to a served location), the **propagation is a required
     step** — trace where the served source is written from; don't edit the copy that never
-    reaches it.
+    reaches it. When the deciding source **forks** on an env var or parameter
+    (`KEY=${SUPPLIED:-<mint>}`), trace *both* branches — a supplied-value override is often the
+    working path, not the default. When the goal names a **live** target, test your path against
+    its *current* state: if the effective source shows the happy path fails now, find the path
+    that works today — never emit "re-provision the platform" to make your own path valid. And
+    the code-is-authority rule cuts both ways: if the help is **silent** on a form but you traced
+    it through the code and confirmed it effective, **emit it** — over-abstaining on a real
+    code-grounded command fails the operator as surely as inventing one.
   - **Give exactly what the goal needs — one command if one suffices** (a target whose recipe
     already does start-and-health is the whole answer); never pad to look multi-step.
+  - **Completeness scan before emitting:** (1) *what makes this fail in practice?* — capacity/
+    resource ceilings, quotas, mutual-exclusion (a VRAM ceiling, one-at-a-time) are preconditions
+    as real as auth and are usually stated away from the runbook; (2) *does the last step reach
+    the goal's end-state, or just the happy-path spine?* — a printed "Next steps" echo is a
+    pointer, not the process; scan for the tail.
   - Mark a precondition that may already hold **[conditional]** (auth/env — `op signin`, `direnv
     allow`); the operator skips it if done.
   - Include prose **prelude/verify** steps as grounded atoms; for a **multi-party/multi-host**
@@ -217,6 +229,9 @@ ground truth. Climb only as far as needed; label every answer with its rung.
     superseded/heritage needs evidence it isn't the effective source, not a portfolio-wide prior
     (the IDs were in the doc that was dismissed); and (b) whether two options you read as mutually
     exclusive actually combine. Over-flagging a phantom gap fails the goal as surely as inventing.
+    **Never claim a check you did not run** — a gap justified by a fabricated absence-check (a grep
+    you didn't run, a source you didn't open) is the invariant broken on the honesty side; actually
+    read the named sources and report the real result.
   - **Abstain on the whole goal** if no grounded process exists (a rollback with no documented
     procedure) rather than fabricate a plausible one.
   Show steps discretely, label less-trusted — verify the order.
