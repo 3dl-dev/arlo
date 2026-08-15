@@ -7,7 +7,7 @@
       "name": "arlo",
       "source": "./plugins/arlo",
       "description": "The arlo operator: a grounded NL->command fallback for when the frontier is down. Ask your agent for the command you need; arlo answers from your project's real ground truth, or says no confident match.",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }
