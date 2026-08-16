@@ -95,7 +95,7 @@ def cited_flags_grounded(narration, help_text):
 # is always a review-required draft, never auto-adopted into the corpus.
 
 def card_grounded(command, source_text):
-    """Every literal (non-slot) segment of a proposed command must appear in the source
+    r"""Every literal (non-slot) segment of a proposed command must appear in the source
     the model read; slot placeholders may be inferred. Reuses binder.literals so
     'grounded' at rung 5 means exactly what 'skeleton' means at rung 1. Returns
     (grounded, missing_segments).
