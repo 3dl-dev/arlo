@@ -35,10 +35,13 @@ on what earns code here versus what stays skill prose. Standard library only.
 
 ## Grading arlo
 
-arlo is graded by **running the skill**, not by running its code. The real loss is an agent
-executing `SKILL.md` in a project it hasn't seen — see [`grade/PROTOCOL.md`](grade/PROTOCOL.md).
-The hermetic checks in `tests/` grade only the core's mechanics (the structural guarantees);
-a green test suite is not a graded product.
+arlo is graded by **running the skill**, not by running its code: an agent executes
+`SKILL.md` in a project it hasn't seen and you read what it does. There is deliberately no
+grader, harness, or eval loop (that apparatus was deleted — we ship a skill, not code). What
+a real session reveals is distilled into a generalized, project-agnostic expectation in
+[`cases/`](cases/), the growing record of what the skill must do. The hermetic checks in
+`tests/` grade only the core's mechanics (the structural guarantees); a green test suite is
+not a graded product.
 
 ## License
 

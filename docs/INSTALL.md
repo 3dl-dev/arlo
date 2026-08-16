@@ -28,6 +28,25 @@ are, how to run a restore — and arlo answers with a **real** command from that
 truth, labeled with how much it trusts the answer. If nothing matches, it says so
 instead of inventing a command. The agent does all the work; you stay in the chat.
 
+### Keep it current
+
+arlo's cards are a projection of your project's *live* ground truth, not stored truth — and
+the ground moves (a flag renamed, a script added) while arlo itself keeps improving. So
+re-sync periodically, and whenever your commands change:
+
+```
+/arlo:update
+```
+
+It re-harvests from your real sources and **reports what drifted** — the guard against a card
+that still says `--parent` after the flag became `--parent-id`. It is idempotent; run it as
+often as you like.
+
+To move *arlo itself* forward — pull the latest version (new capabilities, fixes) and then
+reconcile — run `/arlo:upgrade` (think `apt update` for your project vs `apt upgrade` for
+arlo). To take arlo back out — unwiring the command and deleting its projection, never your
+own ground truth — use `/arlo:remove`.
+
 ## Other agents (opencode, pi, hermes, …)
 
 arlo is harness-agnostic by design — it is a plain-language skill plus a small standard

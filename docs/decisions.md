@@ -212,6 +212,13 @@ this file is where continuity lives, not an issue tracker.)
   entire `eval/` tree was deleted; the STEP-3 grader is `grade/PROTOCOL.md` (agent-driven, no
   arlo import) and per-target held-out sets live in `grade/held_out/`, which is **gitignored**
   — a fresh clone of arlo contains zero project-specific files, enforced by construction.)
+  **Superseded 2026-08-16:** `grade/` itself was deleted (commit `888842b`) — a grader/harness
+  is the very apparatus "we distribute a skill, not code" forbids, and comparing to an authored
+  key embedded the external-control error. There is no committed grading machinery. What a real
+  session reveals is now distilled into one *generalized, project-agnostic* expectation in
+  `cases/` (a growing record of what the skill must do, replayed by an agent running `SKILL.md`,
+  never a `.py`). The no-project-specific-files invariant still holds — `cases/` carries no
+  target command, only the abstraction.
 
 - **The interface: `arlo <your words>` at a shell, set up once by the agent.** Two
   surfaces, one product, and this resolves the paradox that arlo installs into an agent
@@ -233,6 +240,24 @@ this file is where continuity lives, not an issue tracker.)
   that hides the core. The quality of the answer tracks the resolved model tier; the
   model-free floor mis-picks on hard intents (labeled, low-confidence) — which is the
   whole reason the tier is an operator decision, not a shipped default.
+
+- **The setup surface is a lifecycle, not a one-shot (2026-08-16): `start` / `update` /
+  `upgrade` / `remove`.** A single `/arlo:start` was a hidden bet that the ground never moves
+  and arlo never improves — both false, and a stale card set is exactly the
+  `--parent`→`--parent-id` rot arlo exists to prevent, turned on itself. So the frontier-up
+  surface is now focused lifecycle skills: **`start`** (aliased **`setup`**) does first-time
+  setup; **`update`** re-harvests *this project* from live ground truth against the installed
+  arlo and **reports the drift** (added / removed / changed cards) — operationalizing the
+  anti-rot decision below; **`upgrade`** moves *arlo itself* forward — it pulls the latest arlo
+  from upstream (`/plugin marketplace update` + `/plugin update arlo@arlo` in Claude Code,
+  harness-specific otherwise) and then reconciles via `update`; **`remove`** cleanly unwires
+  arlo and deletes its projection, never the project's own ground truth. `update`/`upgrade` is
+  the `apt update` (re-index the project) vs `apt upgrade` (newer arlo) split — two axes of
+  drift, deliberately not one verb. Packaging: repo-root `SKILL.md` stays the single canonical
+  reference, bundled verbatim into each core-running skill as `REFERENCE.md`; the lifecycle
+  bodies live at `skills/<name>/` and are generated into the plugin by `scripts/regen-plugin.sh`
+  (drift-guarded by `tests/test_plugin_sync.py`). No new product code — the lifecycle is skill
+  prose the agent performs (update's card-diff is the agent comparing two harvests, not a `.py`).
 
 - **Anti-rot: cards are a regenerated projection of live ground truth, never stored truth.**
   Card rot is not a side problem — it is the exact failure arlo exists to prevent (the
@@ -335,6 +360,12 @@ agent per project to run `SKILL.md`, collect its answers) + `grade/grade.py` (wh
 deliberately does **not** import arlo — it only compares agent output to a held-out set) +
 `grade/held_out/` (per-target sets, gitignored). Improving a model-free floor is not
 improving the product; the product runs with a real LOM and is graded by running the skill.
+**Correction 2026-08-16:** that committed harness (`grade/PROTOCOL.md` + `grade/grade.py` +
+`grade/held_out/`) was deleted (commit `888842b`) — a harness is the apparatus the
+skill-not-code principle forbids, and a `grade.py` comparing agent output to an authored key
+embedded the external-control error. The durable artifact is instead `cases/`: each real
+session's miss distilled into one generalized, project-agnostic rule, replayed by an agent and
+carrying no target-specific command. Grading stays "run the skill and read what it does."
 
 **Deliverable 1 — arlo grades rung-1 binding against real ground truth on the rail.**
 1. *Model weights reachable from rail jobs.* A small instruct/coder LOM (e.g.

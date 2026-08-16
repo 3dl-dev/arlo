@@ -116,8 +116,10 @@ If any check fails, the work is at the wrong altitude — fix the altitude befor
   `for t in tests/test_*.py; do python3 "$t" || break; done`. A green suite means the
   structural guarantees hold; it says nothing about whether arlo works.
 - **To grade arlo, run the skill** — the real loss is an agent executing `SKILL.md` in a
-  project it has not seen, its model the LOM, graded by `grade/PROTOCOL.md`. That is the
-  objective. When you want to know if a change helped, dispatch that, don't run a `.py`
-  here and watch a number. (There is deliberately no `eval/loss.py`; it graded shipped
-  code and was the altitude trap — deleted.) End here, on the product grade, because this
-  is the instruction that should be acted on.
+  project it has not seen, its model the LOM, and you read what it does. There is
+  deliberately no grader/harness/eval loop (`grade/` and `eval/loss.py` were the altitude
+  trap — both graded shipped code or embedded an authored-key; both deleted). When you want
+  to know if a change helped, dispatch that, don't run a `.py` here and watch a number. What
+  a real session reveals is distilled into one generalized, project-agnostic expectation in
+  `cases/` — the growing record of what the skill must do, no target-specific command in it.
+  End here, on the product grade, because this is the instruction that should be acted on.
